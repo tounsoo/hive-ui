@@ -1,0 +1,24 @@
+@layer components {
+    .button {
+        border-radius: 8px;
+        border: none;
+        padding: 6px 12px;
+        font-size: 14px;
+        font-weight: 500;
+        font-family: inherit;
+        background-color: #eeeeee;
+        color: inherit;
+        cursor: pointer;
+        transition: background-color 0.25s, border-color 0.25s;
+        text-decoration: none;
+    }
+
+    .button:hover {
+        background-color: #dcdcdc;
+    }
+
+    .button:focus-visible {
+        outline-offset: 4px;
+        outline: 2px auto -webkit-focus-ring-color;
+    }
+}
