@@ -1,7 +1,7 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, type DialogHTMLAttributes } from 'react';
 import styles from './Dialog.module.css';
 
-export interface DialogProps {
+export interface DialogProps extends DialogHTMLAttributes<HTMLDialogElement> {
     /**
      * Controls whether the dialog is open or closed.
      */
@@ -26,7 +26,18 @@ export interface DialogProps {
     resetOnClose?: boolean;
 }
 
-export const Dialog = ({ open, onClose, children, className, resetOnClose = true }: DialogProps) => {
+/**
+ * A modal Dialog component that manages locking the scroll of the background and handling focus trap.
+ * It uses the native HTML `<dialog>` element.
+ * 
+ * @example
+ * <Dialog open={isOpen} onClose={() => setIsOpen(false)}>
+ *   <h1>Dialog Title</h1>
+ *   <p>Dialog content goes here.</p>
+ *   <button onClick={() => setIsOpen(false)}>Close</button>
+ * </Dialog>
+ */
+export const Dialog = ({ open, onClose, children, className, resetOnClose = true, onCancel, onClick, ...rest }: DialogProps) => {
     const dialogRef = useRef<HTMLDialogElement>(null);
     const [resetKey, setResetKey] = React.useState(0);
 
@@ -67,6 +78,34 @@ export const Dialog = ({ open, onClose, children, className, resetOnClose = true
         }
     }, [open]); // resetOnClose is stable, only read here
 
+    // Scroll clamp implementation (Overflow Hidden Strategy)
+    useEffect(() => {
+        if (!open) return;
+
+        // Mount: Increment reference count
+        const currentCount = parseInt(document.body.getAttribute('data-scroll-clamp') || '0', 10);
+        document.body.setAttribute('data-scroll-clamp', (currentCount + 1).toString());
+
+        // If this is the first lock, apply overflow: hidden
+        if (currentCount === 0) {
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Cleanup: Decrement reference count
+        return () => {
+            const newCount = parseInt(document.body.getAttribute('data-scroll-clamp') || '0', 10) - 1;
+            // Guard against negative count just in case
+            const clampedCount = Math.max(0, newCount);
+
+            if (clampedCount > 0) {
+                document.body.setAttribute('data-scroll-clamp', clampedCount.toString());
+            } else {
+                document.body.removeAttribute('data-scroll-clamp');
+                document.body.style.overflow = '';
+            }
+        };
+    }, [open]);
+
     const handleBackdropClick = (event: React.MouseEvent<HTMLDialogElement>) => {
         const dialog = dialogRef.current;
         if (!dialog) return;
@@ -86,11 +125,13 @@ export const Dialog = ({ open, onClose, children, className, resetOnClose = true
         if (path[0] === dialog && !isContent) {
             onClose();
         }
+        if (isContent) onClick?.(event);
     };
 
     const handleCancel = (event: React.SyntheticEvent<HTMLDialogElement, Event>) => {
         event.preventDefault(); // Always prevent default browser behavior
         onClose();
+        onCancel?.(event);
     };
 
     return (
@@ -100,6 +141,7 @@ export const Dialog = ({ open, onClose, children, className, resetOnClose = true
             className={`${styles.dialog} ${className || ''}`.trim()}
             onClick={handleBackdropClick}
             onCancel={handleCancel}
+            {...rest}
         >
             {children}
         </dialog>

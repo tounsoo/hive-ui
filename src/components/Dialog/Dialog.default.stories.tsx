@@ -29,7 +29,7 @@ export const Default: Story = {
                 <Dialog open={open} onClose={() => {
                     setOpen(false);
                     args.onClose();
-                }}>
+                }} onCancel={() => console.log('Dialog canceled')}>
                     <h2>Dialog Title</h2>
                     <p>This is a native dialog element.</p>
                     <div style={{ marginTop: '20px', display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
@@ -282,13 +282,11 @@ export const LongContent: Story = {
         return (
             <>
                 <Button label="Open Long Content" onClick={() => setOpen(true)} />
-                <Dialog open={open} onClose={() => setOpen(false)}>
+                <Dialog open={open} onClose={() => setOpen(false)} style={{ maxHeight: '200px' }}>
                     <h2>Terms and Conditions</h2>
-                    <div style={{ maxHeight: '200px', overflowY: 'auto', border: '1px solid #ccc', padding: '10px', margin: '10px 0' }}>
-                        {Array.from({ length: 20 }).map((_, i) => (
-                            <p key={i}>This is paragraph {i + 1} of the terms and conditions. It contains important information.</p>
-                        ))}
-                    </div>
+                    {Array.from({ length: 20 }).map((_, i) => (
+                        <p key={i}>This is paragraph {i + 1} of the terms and conditions. It contains important information.</p>
+                    ))}
                     <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                         <Button label="Accept" onClick={() => setOpen(false)} />
                     </div>
@@ -384,5 +382,58 @@ export const MultipleDialogs: Story = {
 
         // Verify Dialog 1 is closed
         await waitFor(() => expect(dialog1).not.toBeVisible());
+    },
+};
+
+export const ScrollClamp: Story = {
+    render: () => {
+        const [open, setOpen] = useState(false);
+        return (
+            <div style={{ background: 'linear-gradient(to bottom, #fff, red)' }}>
+                <div style={{ padding: '20px' }}>
+                    <h1>Scroll Clamp Test (Overflow Hidden)</h1>
+                    <Button label="Open Scroll Clamp Dialog" onClick={() => setOpen(true)} />
+                    {Array.from({ length: 50 }).map((_, i) => (
+                        <p key={i}>Background content {i + 1}</p>
+                    ))}
+                </div>
+                <Dialog open={open} onClose={() => setOpen(false)}>
+                    <h2>Scroll Clamp Enabled</h2>
+                    <p>Body scroll should be disabled via <code>overflow: hidden</code>.</p>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
+                        <Button label="Close" onClick={() => setOpen(false)} />
+                    </div>
+                </Dialog>
+            </div>
+        );
+    },
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+
+        // 1. Initial State: Normal
+        expect(document.body.style.overflow).not.toBe('hidden');
+        expect(document.body.getAttribute('data-scroll-clamp')).toBeNull();
+
+        // 2. Open Dialog
+        await userEvent.click(canvas.getByRole('button', { name: /open scroll clamp dialog/i }));
+        const dialog = await canvas.findByRole('dialog');
+        await waitFor(() => expect(dialog).toBeVisible());
+
+        // 3. Verify Locked State
+        expect(document.body.style.overflow).toBe('hidden');
+        expect(document.body.getAttribute('data-scroll-clamp')).toBe('1');
+
+        // 4. Close Dialog
+        // Note: Storybook interaction can be tricky with backdrop clicks if covered?
+        // Let's click the close button inside.
+        const closeButton = within(dialog).getByRole('button', { name: /close/i });
+        await userEvent.click(closeButton);
+        await waitFor(() => expect(dialog).not.toBeVisible());
+
+        // 5. Verify Unlocked State
+        await waitFor(() => {
+            expect(document.body.style.overflow).toBe('');
+            expect(document.body.getAttribute('data-scroll-clamp')).toBeNull();
+        });
     },
 };
