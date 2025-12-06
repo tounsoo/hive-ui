@@ -78,7 +78,7 @@ pnpm test
 # Run Storybook (default components)
 pnpm storybook
 
-# Run Storybook (Tailwind CSS examples)
+# Run Storybook (Tailwind examples)
 pnpm storybook-tailwind
 
 # Lint code
@@ -121,7 +121,7 @@ When you import a component, you only get:
 
 ### Styling
 - **CSS Modules** - Component-scoped styles
-- **Tailwind CSS** - Utility-first CSS (Storybook examples)
+- **Tailwind CSS** - Tailwind compatible
 
 ## Project Structure
 
