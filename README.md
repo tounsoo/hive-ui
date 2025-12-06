@@ -167,9 +167,9 @@ Typical build time: **~400-800ms**
 ## Browser Support
 
 Targeting modern browsers with ES2022+ support:
-- Chrome/Edge 90+
-- Firefox 88+
-- Safari 15+
+- Chrome/Edge unknown for now
+- Firefox unknown for now
+- Safari unknown for now
 
 ## License
 
