@@ -11,7 +11,7 @@ const meta: Meta<typeof Dialog> = {
     parameters: {
         layout: 'centered',
     },
-    tags: ['autodocs'],
+
     args: {
         onClose: fn(),
     },

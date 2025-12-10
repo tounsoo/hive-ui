@@ -11,10 +11,15 @@
         cursor: pointer;
         transition: background-color 0.25s, border-color 0.25s;
         text-decoration: none;
+        text-box-trim: trim-both;
     }
 
     .button:hover {
-        background-color: #dcdcdc;
+        background-color: #dddddd;
+    }
+
+    .button:active {
+        background-color: #cccccc;
     }
 
     .button:focus-visible {
