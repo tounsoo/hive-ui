@@ -1,0 +1,70 @@
+import { Meta, Primary, Controls, Canvas, Story } from '@storybook/addon-docs/blocks';
+import * as CardStories from './Card.default.stories';
+
+<Meta of={CardStories} />
+
+# Card
+
+The `Card` component is a flexible container that can be used for grouping related content. It supports two main modes:
+1. **Static**: A simple container with standard styling.
+2. **Interactive**: Acts as a large clickable area (link or button) while maintaining accessibility.
+
+## Import
+
+```tsx
+import { Card } from 'hive-ui';
+```
+
+<Primary />
+
+## Props
+
+The component accepts standard HTML attributes for `div`. If `href` or `onClick` is provided, it becomes interactive and requires accessibility labels.
+
+<Controls />
+
+## Usage
+
+### Static Content
+
+By default, the card is a simple container with border, radius, and padding.
+
+<Canvas of={CardStories.Default} />
+
+### Interactive Card
+
+You can make the entire card clickable by providing an `href` (renders an `<a>` tag) or `onClick` (renders a `<button>`).
+
+**Accessibility Note:** When the card is interactive, you **MUST** provide an `aria-label` or `aria-labelledby` prop to describe the action, as the interactive overlay has no visible text content.
+
+<Canvas of={CardStories.InteractiveLink} />
+
+### With Images
+
+Images usually span the full width of the card. You can achieve this with negative margins or by adjusting the padding of the card container.
+
+<Canvas of={CardStories.WithImage} />
+
+## Internal Design & Accessibility
+
+### Interactiveness Approach (Overlay Pattern)
+This component uses the **"Stretched Link"** or **"Overlay"** pattern to handle interactiveness.
+- An invisible anchor (`<a>`) or button (`<button>`) is absolutely positioned over the entire card content.
+- This ensures the whole card is clickable without wrapping everything in a button (which would be invalid HTML if the content contains other interactive elements).
+
+### Accessibility
+Because the interactive element is an empty overlay, it lacks visible text content.
+- **Requirement**: You **MUST** provide an `aria-label` or `aria-labelledby` prop when the card is interactive. This label should describe the destination or action.
+- The overlay handles the click event, so screen readers will perceive it as a single link/button properly.
+
+### Nested Interactive Elements
+A common pattern is having a clickable card that *also* contains other clickable elements (like a "Favorite" button or "Learn More" link).
+
+To place interactive elements *on top* of this overlay, you must ensure they have:
+1. `position: relative` (or absolute) to create a new stacking context.
+2. `z-index: 2` (or higher) to sit strictly *above* the overlay (which has `z-index: 1`).
+
+<Canvas of={CardStories.InteractiveWithNestedActions} />
+
+> [!WARNING]
+> If you do not apply `z-index: 2` and `position: relative` to nested buttons/links, the card's main overlay will cover them, and clicking them will trigger the Card's action instead.

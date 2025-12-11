@@ -43,3 +43,31 @@ export const ClickInteraction: Story = {
         await expect(button).toHaveFocus();
     },
 };
+
+export const AsLink: Story = {
+    args: {
+        label: 'Go to Google',
+        href: 'https://google.com',
+    },
+    play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+        const canvas = within(canvasElement);
+        const link = canvas.getByRole('link', { name: /go to google/i });
+        await expect(link).toBeInTheDocument();
+        await expect(link).toHaveAttribute('href', 'https://google.com');
+    },
+};
+
+export const WithIcons: Story = {
+    args: {
+        label: 'Save Changes',
+        leading: <span>💾</span>,
+        trailing: <span>✨</span>,
+    },
+    play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+        const canvas = within(canvasElement);
+        const button = canvas.getByRole('button', { name: /save changes/i });
+        await expect(button).toBeInTheDocument();
+        await expect(button).toHaveTextContent('💾');
+        await expect(button).toHaveTextContent('✨');
+    },
+};

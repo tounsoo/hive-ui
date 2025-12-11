@@ -1,49 +1,51 @@
-.dialog {
-    padding: 16px;
-    border-radius: 8px;
-    border: none;
-    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-    max-width: 90vw;
-    max-height: 90vh;
-    margin: auto;
-    overscroll-behavior: none;
+@layer components {
+    .dialog {
+        padding: 16px;
+        border-radius: 8px;
+        border: none;
+        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        max-width: 90vw;
+        max-height: 90vh;
+        margin: auto;
+        overscroll-behavior: none;
 
-    /* Enable transitions for smooth animations */
-    transition: opacity 0.2s ease-out, transform 0.2s ease-out, overlay 0.2s ease-out allow-discrete, display 0.2s ease-out allow-discrete;
+        /* Enable transitions for smooth animations */
+        transition: opacity 0.2s ease-out, transform 0.2s ease-out, overlay 0.2s ease-out allow-discrete, display 0.2s ease-out allow-discrete;
 
-    /* Final state when open */
-    opacity: 1;
-    transform: translateY(0);
-}
+        /* Final state when open */
+        opacity: 1;
+        transform: translateY(0);
+    }
 
-/* Initial state before opening */
-@starting-style {
-    .dialog[open] {
+    /* Initial state before opening */
+    @starting-style {
+        .dialog[open] {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+    }
+
+    /* Exit state when closing */
+    .dialog:not([open]) {
         opacity: 0;
         transform: translateY(20px);
     }
-}
 
-/* Exit state when closing */
-.dialog:not([open]) {
-    opacity: 0;
-    transform: translateY(20px);
-}
+    .dialog::backdrop {
+        background-color: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(2px);
 
-.dialog::backdrop {
-    background-color: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(2px);
+        /* Animate backdrop as well */
+        transition: opacity 0.2s ease-out, overlay 0.2s ease-out allow-discrete, display 0.2s ease-out allow-discrete;
+    }
 
-    /* Animate backdrop as well */
-    transition: opacity 0.2s ease-out, overlay 0.2s ease-out allow-discrete, display 0.2s ease-out allow-discrete;
-}
+    @starting-style {
+        .dialog[open]::backdrop {
+            opacity: 0;
+        }
+    }
 
-@starting-style {
-    .dialog[open]::backdrop {
+    .dialog:not([open])::backdrop {
         opacity: 0;
     }
-}
-
-.dialog:not([open])::backdrop {
-    opacity: 0;
 }

@@ -1,0 +1,59 @@
+import { Meta, Primary, Controls, Canvas, Story } from '@storybook/addon-docs/blocks';
+import * as ButtonStories from './Button.default.stories';
+
+<Meta of={ButtonStories} />
+
+# Button
+
+The `Button` component is a versatile UI element that triggers actions or navigates to other pages. It supports various states, icons, and can function as either a `<button>` or an `<a>` tag depending on the props provided.
+
+## Import
+
+```tsx
+import { Button } from 'hive-ui';
+```
+
+<Primary />
+
+## Props
+
+The component accepts the following props:
+
+<Controls />
+
+## Usage
+
+### As a Link
+
+To use the button as a link, simply provide the `href` prop. The component will automatically render an `<a>` tag with the appropriate styling.
+
+<Canvas of={ButtonStories.AsLink} />
+
+### With Icons
+
+You can add leading or trailing icons (or any ReactNode) using the `leading` and `trailing` props.
+
+<Canvas of={ButtonStories.WithIcons} />
+
+### Interaction
+
+The button supports standard HTML attributes like `onClick`.
+
+<Canvas of={ButtonStories.ClickInteraction} />
+
+## Internal Design & Accessibility
+
+### Dynamic Rendering (Polymorphism)
+The Button component is **polymorphic** based on its props:
+- **`href` provided**: Renders an anchor (`<a>`) tag. Use this for navigation.
+- **`onClick` provided (no `href`)**: Renders a `<button>` tag. Use this for actions.
+
+### Type Safety
+The component uses a **Discriminated Union** for its props configuration (`ButtonAsButton | ButtonAsAnchor`).
+- This ensures you cannot accidentally use `href` (link) combined with props that only make sense for a button, or vice-versa.
+- TypeScript will enforce that navigation buttons have an `href`.
+
+### Accessibility
+- **Semantic HTML**: By rendering the correct tag (`<a>` vs `<button>`), the component ensures screen readers announce the element correctly ("link" vs "button").
+- **Keyboard Support**: Both tags come with native keyboard support (Enter for buttons, Enter for links).
+- **Labeling**: If your button relies solely on an icon (no text label), you must ensure it has an aria-label (though the current `label` prop mandates text, keep this in mind if extending).

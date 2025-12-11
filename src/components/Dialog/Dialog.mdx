@@ -1,0 +1,50 @@
+import { Meta, Primary, Controls, Canvas, Story } from '@storybook/addon-docs/blocks';
+import * as DialogStories from './Dialog.default.stories';
+
+<Meta of={DialogStories} />
+
+# Dialog
+
+The `Dialog` component renders a modal window that overlays the main content. It manages efficient rendering, accessibility (focus management), and scroll locking.
+
+## Import
+
+```tsx
+import { Dialog } from 'hive-ui';
+```
+
+<Primary />
+
+## Props
+
+<Controls />
+
+## Usage
+
+### Basic Example
+
+The dialog is controlled via the `open` prop.
+
+<Canvas of={DialogStories.Default} />
+
+## Internal Design & Accessibility
+
+### Native `<dialog>` Element
+We use the native HTML5 `<dialog>` element.
+- **Why?** It provides built-in accessibility features like focus trapping and correct semantic exposure to screen readers.
+- **Top Layer**: It inherently lives in the "top layer" of the browser, avoiding z-index wars.
+
+### Scroll Locking Strategy
+To prevent the page behind the dialog from scrolling, we implement a **manual scroll lock** instead of relying on the native behavior (which can be inconsistent across browsers or when multiple dialogs are involved).
+- **Mechanism**: We set `overflow: hidden` on `document.body` when the dialog is open.
+- **Reference Counting**: We use a data attribute (`data-scroll-clamp`) to count how many dialogs are currently open. This ensures that if you stack dialogs, closing the top one doesn't accidentally re-enable scrolling if another dialog is still open underneath.
+
+### State Reset (`resetOnClose`)
+By default, the Dialog fully unmounts its content when closed (`resetOnClose={true}`).
+- **Why?** This ensures forms or multistep flows inside the dialog reset to their initial state when re-opened.
+- **Implementation**: We use a `key` prop on the dialog element that increments every time it closes, forcing React to remount the children.
+
+### Accessibility Features
+- **Focus Trap**: Native `<dialog>` restricts focus navigation to within the modal.
+- **Escape Key**: The `onCancel` handler listens for the native "cancel" event (triggered by Escape key) and calls your `onClose` callback.
+- **Backdrop Click**: Clicking the backdrop (the semi-transparent overlay) automatically triggers `onClose`.
