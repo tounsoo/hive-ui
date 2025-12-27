@@ -45,16 +45,49 @@ export const Dialog = ({ open, onClose, children, className, resetOnClose = true
         const dialog = dialogRef.current;
         if (!dialog) return;
 
+        let handleTransitionEnd: (() => void) | undefined;
+
         if (open) {
+            // --- OPEN STATE ---
+
+            // 1. Dialog Visibility
             if (!dialog.open) {
                 dialog.showModal();
+
+                // 2. AutoFocus Management (React 19 / Modern Browsers check)
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        let autoFocusElement = dialog.querySelector<HTMLElement>('[data-autofocus]');
+
+                        // Fallback: Check for native autofocus attribute
+                        if (!autoFocusElement) {
+                            autoFocusElement = dialog.querySelector<HTMLElement>('[autofocus]');
+                        }
+
+                        if (autoFocusElement) {
+                            autoFocusElement.focus();
+                        }
+                    });
+                });
             }
+
+            // 3. Scroll Locking (Mount)
+            // We increment a reference count to handle nested dialogs correctly
+            const currentCount = parseInt(document.body.getAttribute('data-scroll-clamp') || '0', 10);
+            document.body.setAttribute('data-scroll-clamp', (currentCount + 1).toString());
+
+            // Apply overflow: hidden only on the first lock
+            if (currentCount === 0) {
+                document.body.style.overflow = 'hidden';
+            }
+
         } else {
+            // --- CLOSE STATE ---
+
+            // 1. Dialog Visibility (Exit Animation)
             if (dialog.open) {
-                // Start the exit animation
-                const handleTransitionEnd = () => {
+                handleTransitionEnd = () => {
                     dialog.close();
-                    // Reset content if resetOnClose is enabled
                     if (resetOnClose) {
                         setResetKey(k => k + 1);
                     }
@@ -62,49 +95,39 @@ export const Dialog = ({ open, onClose, children, className, resetOnClose = true
 
                 dialog.addEventListener('transitionend', handleTransitionEnd, { once: true });
 
-                // Use requestAnimationFrame to ensure the transition is triggered
-                // This gives the browser time to compute initial styles
+                // Trigger exit animation
                 requestAnimationFrame(() => {
                     requestAnimationFrame(() => {
                         dialog.removeAttribute('open');
                     });
                 });
-
-                // Cleanup
-                return () => {
-                    dialog.removeEventListener('transitionend', handleTransitionEnd);
-                };
             }
         }
-    }, [open]); // resetOnClose is stable, only read here
 
-    // Scroll clamp implementation (Overflow Hidden Strategy)
-    useEffect(() => {
-        if (!open) return;
-
-        // Mount: Increment reference count
-        const currentCount = parseInt(document.body.getAttribute('data-scroll-clamp') || '0', 10);
-        document.body.setAttribute('data-scroll-clamp', (currentCount + 1).toString());
-
-        // If this is the first lock, apply overflow: hidden
-        if (currentCount === 0) {
-            document.body.style.overflow = 'hidden';
-        }
-
-        // Cleanup: Decrement reference count
+        // --- CLEANUP ---
         return () => {
-            const newCount = parseInt(document.body.getAttribute('data-scroll-clamp') || '0', 10) - 1;
-            // Guard against negative count just in case
-            const clampedCount = Math.max(0, newCount);
+            // 1. Scroll Locking Cleanup
+            // Only decrement if we were open (and thus incremented)
+            // However, the cleanup runs for the *previous* render. 
+            // If previous 'open' was true, we must decrement.
+            if (open) {
+                const newCount = parseInt(document.body.getAttribute('data-scroll-clamp') || '0', 10) - 1;
+                const clampedCount = Math.max(0, newCount);
 
-            if (clampedCount > 0) {
-                document.body.setAttribute('data-scroll-clamp', clampedCount.toString());
-            } else {
-                document.body.removeAttribute('data-scroll-clamp');
-                document.body.style.overflow = '';
+                if (clampedCount > 0) {
+                    document.body.setAttribute('data-scroll-clamp', clampedCount.toString());
+                } else {
+                    document.body.removeAttribute('data-scroll-clamp');
+                    document.body.style.overflow = '';
+                }
+            }
+
+            // 2. Dialog Listeners Cleanup
+            if (handleTransitionEnd) {
+                dialog.removeEventListener('transitionend', handleTransitionEnd);
             }
         };
-    }, [open]);
+    }, [open]); // resetOnClose is stable
 
     const handleBackdropClick = (event: React.MouseEvent<HTMLDialogElement>) => {
         const dialog = dialogRef.current;

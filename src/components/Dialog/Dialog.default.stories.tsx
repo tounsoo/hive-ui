@@ -437,3 +437,46 @@ export const ScrollClamp: Story = {
         });
     },
 };
+
+export const AutoFocusSecondInput: Story = {
+    render: () => {
+        const [open, setOpen] = useState(false);
+        return (
+            <>
+                <Button label="Open Focus Test Dialog" onClick={() => setOpen(true)} />
+                <Dialog open={open} onClose={() => setOpen(false)}>
+                    <h2>Auto Focus Second Input</h2>
+                    <input
+                        data-testid="first-input"
+                        placeholder="I am first (default focus?)"
+                        style={{ marginBottom: '10px', display: 'block' }}
+                    />
+                    <input
+                        data-testid="autofocus-input"
+                        data-autofocus
+                        placeholder="I should be focused"
+                        style={{ marginBottom: '10px', display: 'block' }}
+                    />
+                    <Button label="Close" onClick={() => setOpen(false)} />
+                </Dialog>
+            </>
+        );
+    },
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+
+        // Open Dialog
+        await userEvent.click(canvas.getByRole('button', { name: /open focus test dialog/i }));
+        const dialog = await canvas.findByRole('dialog');
+        await waitFor(() => expect(dialog).toBeVisible());
+
+        // Check if SECOND input is focused
+        const secondInput = within(dialog).getByTestId('autofocus-input');
+        const firstInput = within(dialog).getByTestId('first-input');
+
+        // Wait for focus to settle
+        await waitFor(() => expect(secondInput).toHaveFocus());
+
+        expect(firstInput).not.toHaveFocus();
+    },
+};

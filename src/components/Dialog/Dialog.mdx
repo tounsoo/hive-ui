@@ -48,3 +48,12 @@ By default, the Dialog fully unmounts its content when closed (`resetOnClose={tr
 - **Focus Trap**: Native `<dialog>` restricts focus navigation to within the modal.
 - **Escape Key**: The `onCancel` handler listens for the native "cancel" event (triggered by Escape key) and calls your `onClose` callback.
 - **Backdrop Click**: Clicking the backdrop (the semi-transparent overlay) automatically triggers `onClose`.
+- **Auto Focus**: React's native `autoFocus` property often conflicts with the timing of `dialog.showModal()`, causing the focus to be lost or reset. Additionally, React 19 often removes the `autoFocus` attribute from the DOM entirely.
+  > **Recommendation**: use the `data-autofocus` attribute on the element you wish to focus. The `Dialog` component specifically looks for this attribute after the modal opens to ensure reliable focus management.
+
+```tsx
+<Dialog open={isOpen} onClose={close}>
+  <input placeholder="I will not be focused" />
+  <input data-autofocus placeholder="I will be focused!" />
+</Dialog>
+```
