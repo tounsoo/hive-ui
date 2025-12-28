@@ -48,12 +48,19 @@ By default, the Dialog fully unmounts its content when closed (`resetOnClose={tr
 - **Focus Trap**: Native `<dialog>` restricts focus navigation to within the modal.
 - **Escape Key**: The `onCancel` handler listens for the native "cancel" event (triggered by Escape key) and calls your `onClose` callback.
 - **Backdrop Click**: Clicking the backdrop (the semi-transparent overlay) automatically triggers `onClose`.
-- **Auto Focus**: React's native `autoFocus` property often conflicts with the timing of `dialog.showModal()`, causing the focus to be lost or reset. Additionally, React 19 often removes the `autoFocus` attribute from the DOM entirely.
-  > **Recommendation**: use the `data-autofocus` attribute on the element you wish to focus. The `Dialog` component specifically looks for this attribute after the modal opens to ensure reliable focus management.
+- **Focus Management & Scrolling**:
+    1. **Explicit Focus**: Use the `data-autofocus` attribute on the element you wish to focus. The `Dialog` component will find this element and focus it immediately after opening.
+    2. **Default Focus**: If no `data-autofocus` (or native `autofocus`) element is found, the component **focuses the Dialog container itself**.
+    3. **Scroll Prevention**: Browsers typically attempt to focus the first interactive element inside a dialog, which can cause the dialog to scroll to the bottom if that element (e.g., a "Confirm" button) is at the end. 
+       - **Default Behavior**: If no auto-focus element is specified, we prevent this jump by forcefully resetting the scroll position (`scrollTop = 0`) and keeping focus at the top.
+       - **With Auto-Focus**: If you provide `data-autofocus` (or `autofocus`), the browser *will* scroll to that element, which is the expected behavior.
+
+    > **Why `data-autofocus`?** React 19 often removes the native `autoFocus` attribute from the DOM during render, making it invisible to our manual focus logic. Additionally, `dialog.showModal()` does not accept options to prevent the browser's default scroll/focus behavior. This custom implementation ensures consistent, accessible behavior across all browsers.
 
 ```tsx
 <Dialog open={isOpen} onClose={close}>
   <input placeholder="I will not be focused" />
+  {/* This input will receive focus */}
   <input data-autofocus placeholder="I will be focused!" />
 </Dialog>
 ```

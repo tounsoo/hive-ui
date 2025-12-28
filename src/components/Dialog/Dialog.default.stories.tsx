@@ -276,14 +276,14 @@ export const WithForm: Story = {
     },
 };
 
-export const LongContent: Story = {
+export const ScrollableContent: Story = {
     render: () => {
         const [open, setOpen] = useState(false);
         return (
             <>
-                <Button label="Open Long Content" onClick={() => setOpen(true)} />
+                <Button label="Open Scrollable Content" onClick={() => setOpen(true)} />
                 <Dialog open={open} onClose={() => setOpen(false)} style={{ maxHeight: '200px' }}>
-                    <h2>Terms and Conditions</h2>
+                    <h2 data-testid="scrollable-title">Terms and Conditions</h2>
                     {Array.from({ length: 20 }).map((_, i) => (
                         <p key={i}>This is paragraph {i + 1} of the terms and conditions. It contains important information.</p>
                     ))}
@@ -293,6 +293,28 @@ export const LongContent: Story = {
                 </Dialog>
             </>
         );
+    },
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+
+        // Open Dialog
+        await userEvent.click(canvas.getByRole('button', { name: /open scrollable content/i }));
+        const dialog = await canvas.findByRole('dialog');
+        await waitFor(() => expect(dialog).toBeVisible());
+
+        // Verify Default Focus is ON THE DIALOG itself
+        // This ensures we start at the top of the scrollable content
+        await waitFor(() => expect(dialog).toHaveFocus());
+
+        // Verify we are actually at the top
+        // If the browser pre-scrolled to the bottom button before our focus logic ran, 
+        // scrollTop would be > 0. We want it to be 0.
+        // Note: We use a small tolerance or just checks 0 if we are sure.
+        expect(dialog.scrollTop).toBe(0);
+
+        // Verify the Accept button is NOT focused (which would cause scrolling to bottom)
+        const acceptButton = within(dialog).getByRole('button', { name: /accept/i });
+        expect(acceptButton).not.toHaveFocus();
     },
 };
 

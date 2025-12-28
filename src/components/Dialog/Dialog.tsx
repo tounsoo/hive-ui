@@ -66,6 +66,14 @@ export const Dialog = ({ open, onClose, children, className, resetOnClose = true
 
                         if (autoFocusElement) {
                             autoFocusElement.focus();
+                        } else {
+                            // WCAG Best Practice: Focus the dialog itself if no specific element is marked.
+                            // This ensures the focus is at the top of the content (start of the dialog).
+                            dialog.focus();
+
+                            // Browser might have scrolled to the bottom (e.g. attempting to focus last interactive element)
+                            // Force scroll to top to ensure beginning of content is visible
+                            dialog.scrollTop = 0;
                         }
                     });
                 });
@@ -161,6 +169,7 @@ export const Dialog = ({ open, onClose, children, className, resetOnClose = true
         <dialog
             key={resetKey}
             ref={dialogRef}
+            tabIndex={-1}
             className={`${styles.dialog} ${className || ''}`.trim()}
             onClick={handleBackdropClick}
             onCancel={handleCancel}
