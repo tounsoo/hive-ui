@@ -71,3 +71,10 @@ export const WithIcons: Story = {
         await expect(button).toHaveTextContent('✨');
     },
 };
+
+export const TailwindExample: Story = {
+    args: {
+        label: 'Tailwind Button',
+        className: 'bg-red-600 text-white hover:bg-red-700',
+    },
+};

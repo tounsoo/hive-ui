@@ -176,3 +176,23 @@ export const InteractiveWithNestedActions: Story = {
         // that userEvent.click() succeeds and targets the correct element.
     }
 };
+
+export const TailwindExample: Story = {
+    args: {
+        onClick: () => alert('Clicked!'),
+        'aria-label': 'Tailwind Interactive Card',
+        children: (
+            <div className="flex items-center space-x-4">
+                <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center text-green-600 text-2xl">
+                    ✓
+                </div>
+                <div>
+                    <h3 className="text-lg font-semibold text-gray-900">Task Completed</h3>
+                    <p className="text-sm text-gray-500">Click to view details</p>
+                </div>
+            </div>
+        ),
+        className: 'hover:!bg-green-50 hover:!border-green-300 transition-all !duration-300',
+        style: { width: '350px' },
+    },
+};

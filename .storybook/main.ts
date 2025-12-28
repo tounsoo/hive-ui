@@ -1,9 +1,10 @@
 import type { StorybookConfig } from '@storybook/react-vite';
+import tailwindcss from '@tailwindcss/vite';
 
 const config: StorybookConfig = {
   "stories": [
     "../src/**/*.mdx",
-    "../src/**/*.default.stories.@(js|jsx|mjs|ts|tsx)"
+    "../src/**/*.stories.@(js|jsx|mjs|ts|tsx)",
   ],
   "addons": [
     "@chromatic-com/storybook",
@@ -12,5 +13,12 @@ const config: StorybookConfig = {
     "@storybook/addon-docs"
   ],
   "framework": "@storybook/react-vite",
+  async viteFinal(config) {
+    if (!config.plugins) {
+      config.plugins = [];
+    }
+    config.plugins.push(tailwindcss());
+    return config;
+  },
 };
 export default config;
