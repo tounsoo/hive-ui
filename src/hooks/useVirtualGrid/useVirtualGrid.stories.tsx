@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { useRef } from 'react';
+import { useRef, useState, useCallback, useEffect } from 'react';
 import { useVirtualGrid, type VirtualGridActionContext } from './useVirtualGrid';
 
 const meta: Meta = {
@@ -174,7 +174,7 @@ export const TwoColumnAction: StoryObj = {
                                         <button
                                             tabIndex={-1}
                                             // Mouse Action (Reusing shared logic)
-                                            onClick={(e) => {
+                                            onClick={() => {
                                                 handleAction({
                                                     item,
                                                     row: row.index,
@@ -194,4 +194,132 @@ export const TwoColumnAction: StoryObj = {
             </div>
         );
     }
+};
+
+// --- Infinite Scroll Mock Data & Helpers ---
+
+// Global counter to simulate database IDs
+let idCounter = 0;
+
+const fetchMockData = (limit: number): Promise<GridItem[]> => {
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            const newItems = Array.from({ length: limit }).map((_, i) => ({
+                id: idCounter + i,
+                title: `Infinite Row ${idCounter + i}`,
+            }));
+            idCounter += limit;
+            resolve(newItems);
+        }, 400); // 400ms delay
+    });
+};
+
+export const InfiniteScroll: StoryObj = {
+    render: () => {
+        const parentRef = useRef<HTMLDivElement>(null);
+
+        // State
+        const [items, setItems] = useState<GridItem[]>([]);
+        const [isLoading, setIsLoading] = useState(false);
+        const [hasMore, setHasMore] = useState(true);
+
+        // Initial Load
+        useEffect(() => {
+            // Reset counter on mount for fresh story experience
+            idCounter = 0;
+            setItems([]);
+            setHasMore(true);
+
+            // Trigger first load
+            const loadInitial = async () => {
+                setIsLoading(true);
+                const initial = await fetchMockData(20);
+                setItems(initial);
+                setIsLoading(false);
+            };
+            loadInitial();
+
+            // eslint-disable-next-line react-hooks/exhaustive-deps
+        }, []);
+
+        const loadMore = useCallback(async () => {
+            if (isLoading || !hasMore) return;
+
+            setIsLoading(true);
+            try {
+                // Simulate a limit of 1000 items total
+                if (items.length >= 1000) {
+                    setHasMore(false);
+                    setIsLoading(false);
+                    return;
+                }
+
+                const newItems = await fetchMockData(20);
+                setItems((prev) => [...prev, ...newItems]);
+            } finally {
+                setIsLoading(false);
+            }
+        }, [isLoading, hasMore, items.length]);
+
+        // Hook
+        const { virtualRows, gridContainerProps, gridContentProps, focus, getRowProps } = useVirtualGrid({
+            items,
+            columnCount: 1,
+            parentRef,
+            estimateSize: () => 40,
+            containerHeight: '400px',
+            overscan: 10,
+            onEndReached: loadMore,
+            endReachedThreshold: 5,
+        });
+
+        return (
+            <div className="p-4 max-w-md mx-auto">
+                <h3 className="mb-2 font-bold text-lg">Infinite Scroll Example</h3>
+                <p className="mb-4 text-sm text-gray-600">
+                    Scroll down to load more items. Stops at 1000 items.
+                    <br />Current Count: {items.length}
+                </p>
+
+                <div
+                    ref={parentRef}
+                    {...gridContainerProps}
+                    className="border border-gray-300 rounded-md shadow-sm bg-white"
+                >
+                    <div {...gridContentProps}>
+                        {virtualRows.map((row) => {
+                            const item = items[row.index];
+                            if (!item) return null; // Safety check
+
+                            const rowProps = getRowProps(row);
+                            return (
+                                <div
+                                    key={row.key}
+                                    {...rowProps}
+                                    className={`
+                                        flex items-center px-4 border-b border-gray-100
+                                        ${focus.row === row.index ? 'bg-blue-50 ring-1 ring-inset ring-blue-500' : 'hover:bg-gray-50'}
+                                    `}
+                                >
+                                    <span className="font-mono text-gray-400 mr-3 w-8">{item.id}</span>
+                                    <span>{item.title}</span>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                {isLoading && (
+                    <div className="mt-2 text-center text-blue-600 animate-pulse">
+                        Loading more items...
+                    </div>
+                )}
+                {!hasMore && (
+                    <div className="mt-2 text-center text-gray-500">
+                        No more items to load.
+                    </div>
+                )}
+            </div>
+        );
+    },
 };

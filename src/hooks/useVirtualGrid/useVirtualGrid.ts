@@ -16,6 +16,8 @@ export interface UseVirtualGridOptions<T> {
     overscan?: number;
     onItemAction?: (context: VirtualGridActionContext<T>) => void;
     containerHeight?: number | string;
+    onEndReached?: () => void;
+    endReachedThreshold?: number;
 }
 
 export interface UseVirtualGridResult {
@@ -37,6 +39,8 @@ export function useVirtualGrid<T>({
     overscan = 5,
     onItemAction,
     containerHeight,
+    onEndReached,
+    endReachedThreshold = 2,
 }: UseVirtualGridOptions<T>): UseVirtualGridResult {
     // 1. Navigation State
     const [focus, setFocus] = useState({ row: 0, col: 0 });
@@ -134,8 +138,20 @@ export function useVirtualGrid<T>({
         },
     };
 
+    const virtualRows = rowVirtualizer.getVirtualItems();
+
+    // 8. Infinite Scroll
+    useEffect(() => {
+        if (!onEndReached || virtualRows.length === 0) return;
+
+        const lastItem = virtualRows[virtualRows.length - 1];
+        if (lastItem.index >= items.length - 1 - endReachedThreshold) {
+            onEndReached();
+        }
+    }, [virtualRows, items.length, endReachedThreshold, onEndReached]);
+
     return {
-        virtualRows: rowVirtualizer.getVirtualItems(),
+        virtualRows,
         totalSize: rowVirtualizer.getTotalSize(),
         focus,
         setFocus,
