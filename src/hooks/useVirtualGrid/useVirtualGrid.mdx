@@ -1,0 +1,114 @@
+import { Meta, Title, Subtitle, Description, Primary, Controls, Canvas, Story, ArgTypes } from '@storybook/addon-docs/blocks';
+import * as UseVirtualGridStories from './useVirtualGrid.stories';
+
+<Meta of={UseVirtualGridStories} />
+
+# useVirtualGrid
+
+`useVirtualGrid` is a custom hook that provides virtualization for lists (and grids via multiple columns logic), along with built-in 2D keyboard navigation and infinite scroll support. It leverages `@tanstack/react-virtual` under the hood.
+
+<Primary />
+
+## Props
+
+<Controls />
+
+## Usage
+
+```tsx
+import { useVirtualGrid } from './useVirtualGrid';
+import { useRef } from 'react';
+
+function MyGrid() {
+  const parentRef = useRef<HTMLDivElement>(null);
+  const items = Array.from({ length: 1000 });
+
+  const { virtualRows, gridContainerProps, gridContentProps, getRowProps } = useVirtualGrid({
+    items,
+    columnCount: 1,
+    parentRef,
+    estimateSize: () => 40,
+    containerHeight: '400px',
+  });
+
+  return (
+    <div ref={parentRef} {...gridContainerProps}>
+      <div {...gridContentProps}>
+        {virtualRows.map((virtualRow) => (
+          <div key={virtualRow.key} {...getRowProps(virtualRow)}>
+            Row {virtualRow.index}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+```
+
+## Return Values
+
+The hook returns an object containing:
+
+<ArgTypes of={UseVirtualGridStories.VirtualGridResultDocs} />
+
+## Examples
+
+### 2-Column Grid with Actions
+
+To implement a grid with multiple interactive columns:
+
+1.  **Set Column Count**: Initialize the hook with `columnCount: 2` (or your desired number).
+2.  **Sync Focus on Click**: You **must** attach an `onClick` handler to each interactive cell that calls `setFocus({ row, col })`. This ensures that subsequent keyboard navigation starts from the last clicked position.
+3.  **Visual Styling**: Use the returned `focus` object (`{ row, col }`) to apply conditional styles (e.g., outlines or background colors) to the currently focused cell.
+
+```tsx
+const { focus, setFocus } = useVirtualGrid({
+  columnCount: 2, // 1. Set Column Count
+  // ...
+});
+
+// Inside your render map...
+<div
+  onClick={() => setFocus({ row: row.index, col: 0 })} // 2. Sync Focus
+  style={{
+    // 3. Visual Styling
+    outline: focus.row === row.index && focus.col === 0 ? '2px solid blue' : 'none'
+  }}
+>
+  Cell Content
+</div>
+```
+
+<Canvas of={UseVirtualGridStories.TwoColumnAction} />
+
+### Infinite Scroll
+
+To implement infinite scroll:
+
+1.  **Stable Callback**: Pass an `onEndReached` function wrapped in `useCallback` to prevent unnecessary re-renders or effect triggers.
+2.  **Prevent Duplicate Fetches**: Your callback should check a local `isLoading` state to ensure only one fetch request is active at a time.
+3.  **Append Data**: When the fetch completes, append the new items to your `items` array. The virtualizer will automatically detect the size change.
+4.  **Threshold**: Optionally adjust `endReachedThreshold` (default: 2) to trigger the load earlier or later.
+
+```tsx
+const handleEndReached = useCallback(async () => {
+    // 2. Prevent Duplicate Fetches
+    if (isLoading || !hasMore) return;
+    
+    setIsLoading(true);
+    const newItems = await fetchMore();
+    
+    // 3. Append Data
+    setItems(prev => [...prev, ...newItems]);
+    setIsLoading(false);
+}, [isLoading, hasMore]);
+
+useVirtualGrid({
+    // 1. Stable Callback
+    onEndReached: handleEndReached, 
+    endReachedThreshold: 2 // 4. Threshold
+    // ...
+});
+```
+
+<Canvas of={UseVirtualGridStories.InfiniteScroll} />

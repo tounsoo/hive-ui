@@ -11,15 +11,25 @@ This document serves as a guide for writing and maintaining documentation in the
 Standard MDX files should follow this structure:
 
 1.  **Date/Meta**: Standard Storybook meta import.
-2.  **Title**: Component name.
-3.  **Description**: Broad overview of the component.
+2.  **Title**: Component name as an H1 Header (`# ComponentName`). Do not use generic Storybook blocks like `<Title />`.
+3.  **Description**: Broad overview of the component as a standard Markdown paragraph. Do not use `<Description />`.
 4.  **Import**: Code snippet showing how to import the component.
-5.  **Props**: Table or description of key props.
+5.  **Props / Arguments**: Table or description of key props. For hooks, document **Return Values** using `<ArgTypes />`.
 6.  **Usage**: Examples of common use cases.
 7.  **Accessibility**: Specific accessibility features, requirements, or behaviors.
 8.  **Internal Design / Architecture**: (Optional but recommended) Explanation of non-obvious implementation details (e.g., event handling, DOM structure choices, state management).
 
 ## Component Specific Guidelines
+
+### Implementation Guides (How-To)
+For complex features requiring specific consumer implementation (e.g., sticking headers, nested clickable elements, specific hook patterns):
+1.  **Structure**: Use a Numbered List for steps/requirements.
+2.  **Format**: Start each item with a **Bold Requirement Name**.
+3.  **Code**: Always include a concise `tsx` code snippet immediately following the list to illustrate the requirements in context.
+4.  **Checklist**:
+    - [ ] 1. **Step Name**: Explanation
+    - [ ] Code Snippet
+    - [ ] `<Canvas />` (if applicable)
 
 ### Internal Design & Choices
 We must document *why* we made certain choices.

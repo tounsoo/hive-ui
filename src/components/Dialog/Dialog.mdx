@@ -27,6 +27,31 @@ The dialog is controlled via the `open` prop.
 
 <Canvas of={DialogStories.Default} />
 
+### Sticky Headers & Footers
+
+Use `Dialog.Sticky` to create headers or footers that remain fixed while the content scrolls.
+
+1.  **Wrapper Component**: Wrap your header/footer in `<Dialog.Sticky>`.
+2.  **Alignment**: Set `align="top"` for headers or `align="bottom"` for footers.
+3.  **Edge Flush**: The component automatically handles negative margins to sit flush against the dialog edges.
+
+```tsx
+<Dialog className="max-h-[500px]">
+    {/* 1. Wrapper with Alignment */}
+    <Dialog.Sticky align="top">
+        <Dialog.Title className="mb-0">Sticky Header</Dialog.Title>
+    </Dialog.Sticky>
+
+    <div className="py-2">
+        {/* Scrollable Content */}
+    </div>
+
+    <Dialog.Sticky align="bottom">
+        <Button>Action</Button>
+    </Dialog.Sticky>
+</Dialog>
+```
+
 ## Internal Design & Accessibility
 
 ### Native `<dialog>` Element
@@ -48,19 +73,19 @@ By default, the Dialog fully unmounts its content when closed (`resetOnClose={tr
 - **Focus Trap**: Native `<dialog>` restricts focus navigation to within the modal.
 - **Escape Key**: The `onCancel` handler listens for the native "cancel" event (triggered by Escape key) and calls your `onClose` callback.
 - **Backdrop Click**: Clicking the backdrop (the semi-transparent overlay) automatically triggers `onClose`.
-- **Focus Management & Scrolling**:
-    1. **Explicit Focus**: Use the `data-autofocus` attribute on the element you wish to focus. The `Dialog` component will find this element and focus it immediately after opening.
-    2. **Default Focus**: If no `data-autofocus` (or native `autofocus`) element is found, the component **focuses the Dialog container itself**.
-    3. **Scroll Prevention**: Browsers typically attempt to focus the first interactive element inside a dialog, which can cause the dialog to scroll to the bottom if that element (e.g., a "Confirm" button) is at the end. 
-       - **Default Behavior**: If no auto-focus element is specified, we prevent this jump by forcefully resetting the scroll position (`scrollTop = 0`) and keeping focus at the top.
-       - **With Auto-Focus**: If you provide `data-autofocus` (or `autofocus`), the browser *will* scroll to that element, which is the expected behavior.
+### Focus Management & Scrolling
 
-    > **Why `data-autofocus`?** React 19 often removes the native `autoFocus` attribute from the DOM during render, making it invisible to our manual focus logic. Additionally, `dialog.showModal()` does not accept options to prevent the browser's default scroll/focus behavior. This custom implementation ensures consistent, accessible behavior across all browsers.
+1.  **Explicit Focus**: Use the `data-autofocus` attribute on the element you wish to focus. The `Dialog` component will find this element and focus it immediately after opening.
+2.  **Default Focus**: If no `data-autofocus` (or native `autofocus`) element is found, the component **focuses the Dialog container itself**.
+3.  **Scroll Prevention**: The component automatically prevents the browser from scrolling to the bottom (if the last element were focused by default), ensuring the user starts at the top of the content.
 
 ```tsx
 <Dialog open={isOpen} onClose={close}>
   <input placeholder="I will not be focused" />
-  {/* This input will receive focus */}
+  
+  {/* 1. Explicit Focus */}
   <input data-autofocus placeholder="I will be focused!" />
 </Dialog>
 ```
+
+> **Why `data-autofocus`?** React 19 often removes the native `autoFocus` attribute from the DOM during render, making it invisible to our manual focus logic. Additionally, `dialog.showModal()` does not accept options to prevent the browser's default scroll/focus behavior. This custom implementation ensures consistent, accessible behavior across all browsers.

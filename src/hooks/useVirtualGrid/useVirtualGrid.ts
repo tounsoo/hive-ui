@@ -21,13 +21,21 @@ export interface UseVirtualGridOptions<T> {
 }
 
 export interface UseVirtualGridResult {
+    /** Array of virtual items currently visible. Map over this to render. */
     virtualRows: VirtualItem[];
+    /** Total estimated height of the content in pixels. */
     totalSize: number;
+    /** Current focus state containing row and column indices. */
     focus: { row: number; col: number };
+    /** State setter to manually control focus. */
     setFocus: React.Dispatch<React.SetStateAction<{ row: number; col: number }>>;
+    /** The keydown handler to be attached to the container. */
     handleKeyDown: (e: React.KeyboardEvent) => void;
+    /** Props to spread onto the scrollable container (role, tabIndex, handlers). */
     gridContainerProps: React.HTMLAttributes<HTMLElement>;
+    /** Props to spread onto the inner content wrapper (height, position). */
     gridContentProps: React.HTMLAttributes<HTMLDivElement>;
+    /** Function returning props for a specific row (styles, aria attributes). */
     getRowProps: (row: VirtualItem) => React.HTMLAttributes<HTMLElement>;
 }
 

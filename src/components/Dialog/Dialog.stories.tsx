@@ -5,20 +5,27 @@ import { userEvent, within, expect, fn, waitFor } from '@storybook/test';
 import { Dialog } from './Dialog';
 import { Button } from '../Button';
 
-const meta: Meta<typeof Dialog> = {
+const meta = {
     title: 'Components/Dialog',
     component: Dialog,
     parameters: {
         layout: 'centered',
     },
+    subcomponents: {
+        'Dialog.Body': Dialog.Body,
+        'Dialog.Sticky': Dialog.Sticky,
+        'Dialog.Title': Dialog.Title,
+    },
 
     args: {
         onClose: fn(),
+        open: false,
+        children: 'Default Content',
     },
-};
+} satisfies Meta<typeof Dialog>;
 
 export default meta;
-type Story = StoryObj<typeof Dialog>;
+type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
     render: (args) => {
@@ -30,11 +37,13 @@ export const Default: Story = {
                     setOpen(false);
                     args.onClose();
                 }} onCancel={() => console.log('Dialog canceled')}>
-                    <Dialog.Title>Dialog Title</Dialog.Title>
-                    <p>This is a native dialog element.</p>
-                    <div className="flex gap-2 justify-end mt-2">
-                        <Button label="Close" onClick={() => setOpen(false)} />
-                    </div>
+                    <Dialog.Body>
+                        <Dialog.Title>Dialog Title</Dialog.Title>
+                        <p>This is a native dialog element.</p>
+                        <div className="flex gap-2 justify-end mt-2">
+                            <Button label="Close" onClick={() => setOpen(false)} />
+                        </div>
+                    </Dialog.Body>
                 </Dialog>
             </>
         );
@@ -70,8 +79,10 @@ export const CloseOnBackdrop: Story = {
                     setOpen(false);
                     args.onClose();
                 }} onCancel={() => console.log('Dialog canceled')}>
-                    <Dialog.Title>Backdrop Test</Dialog.Title>
-                    <p>Click outside to close.</p>
+                    <Dialog.Body>
+                        <Dialog.Title>Backdrop Test</Dialog.Title>
+                        <p>Click outside to close.</p>
+                    </Dialog.Body>
                 </Dialog>
             </>
         );
@@ -107,15 +118,17 @@ export const ClickContentDoesNotClose: Story = {
                     setOpen(false);
                     args.onClose();
                 }}>
-                    <h2>Content Click Test</h2>
-                    <p data-testid="click-counter">Clicked: {clickCount} times</p>
-                    <Button
-                        label="Inside Action"
-                        onClick={(e) => {
-                            e.stopPropagation(); // Prevent event bubbling
-                            setClickCount(c => c + 1);
-                        }}
-                    />
+                    <Dialog.Body>
+                        <h2>Content Click Test</h2>
+                        <p data-testid="click-counter">Clicked: {clickCount} times</p>
+                        <Button
+                            label="Inside Action"
+                            onClick={(e) => {
+                                e.stopPropagation(); // Prevent event bubbling
+                                setClickCount(c => c + 1);
+                            }}
+                        />
+                    </Dialog.Body>
                 </Dialog>
             </>
         );
@@ -159,8 +172,10 @@ export const CloseOnEsc: Story = {
                     setOpen(false);
                     args.onClose();
                 }}>
-                    <h2>ESC Test</h2>
-                    <p>Press ESC to close.</p>
+                    <Dialog.Body>
+                        <h2>ESC Test</h2>
+                        <p>Press ESC to close.</p>
+                    </Dialog.Body>
                 </Dialog>
             </>
         );
@@ -191,21 +206,23 @@ export const ResetOnClose: Story = {
             <>
                 <Button label="Open Dialog" onClick={() => setOpen(true)} />
                 <Dialog open={open} onClose={() => setOpen(false)}>
-                    <Dialog.Title>Form with Reset (Default)</Dialog.Title>
-                    <p>Type something and close the dialog. Content will reset when reopened.</p>
-                    <form style={{ display: 'flex', flexDirection: 'column', gap: '10px', minWidth: '300px', marginTop: '10px' }}>
-                        <label>
-                            Your Message:
-                            <input
-                                type="text"
-                                placeholder="Type here..."
-                                style={{ width: '100%', padding: '8px', marginTop: '4px' }}
-                            />
-                        </label>
-                        <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '10px' }}>
-                            <Button label="Close" onClick={() => setOpen(false)} />
-                        </div>
-                    </form>
+                    <Dialog.Body>
+                        <Dialog.Title>Form with Reset (Default)</Dialog.Title>
+                        <p>Type something and close the dialog. Content will reset when reopened.</p>
+                        <form style={{ display: 'flex', flexDirection: 'column', gap: '10px', minWidth: '300px', marginTop: '10px' }}>
+                            <label>
+                                Your Message:
+                                <input
+                                    type="text"
+                                    placeholder="Type here..."
+                                    style={{ width: '100%', padding: '8px', marginTop: '4px' }}
+                                />
+                            </label>
+                            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '10px' }}>
+                                <Button label="Close" onClick={() => setOpen(false)} />
+                            </div>
+                        </form>
+                    </Dialog.Body>
                 </Dialog>
             </>
         );
@@ -219,21 +236,23 @@ export const PreserveState: Story = {
             <>
                 <Button label="Open Dialog" onClick={() => setOpen(true)} />
                 <Dialog open={open} onClose={() => setOpen(false)} resetOnClose={false}>
-                    <Dialog.Title>Form with Preserved State</Dialog.Title>
-                    <p>Type something and close the dialog. Content will be preserved when reopened.</p>
-                    <form style={{ display: 'flex', flexDirection: 'column', gap: '10px', minWidth: '300px', marginTop: '10px' }}>
-                        <label>
-                            Your Message:
-                            <input
-                                type="text"
-                                placeholder="Type here..."
-                                style={{ width: '100%', padding: '8px', marginTop: '4px' }}
-                            />
-                        </label>
-                        <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '10px' }}>
-                            <Button label="Close" onClick={() => setOpen(false)} />
-                        </div>
-                    </form>
+                    <Dialog.Body>
+                        <Dialog.Title>Form with Preserved State</Dialog.Title>
+                        <p>Type something and close the dialog. Content will be preserved when reopened.</p>
+                        <form style={{ display: 'flex', flexDirection: 'column', gap: '10px', minWidth: '300px', marginTop: '10px' }}>
+                            <label>
+                                Your Message:
+                                <input
+                                    type="text"
+                                    placeholder="Type here..."
+                                    style={{ width: '100%', padding: '8px', marginTop: '4px' }}
+                                />
+                            </label>
+                            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '10px' }}>
+                                <Button label="Close" onClick={() => setOpen(false)} />
+                            </div>
+                        </form>
+                    </Dialog.Body>
                 </Dialog>
             </>
         );
@@ -248,28 +267,30 @@ export const WithForm: Story = {
             <>
                 <Button label="Open Form Dialog" onClick={() => setOpen(true)} />
                 <Dialog open={open} onClose={() => setOpen(false)}>
-                    <Dialog.Title>Contact Us</Dialog.Title>
-                    <form
-                        style={{ display: 'flex', flexDirection: 'column', gap: '10px', minWidth: '300px' }}
-                        onSubmit={(e) => {
-                            e.preventDefault();
-                            alert('Form submitted!');
-                            setOpen(false);
-                        }}
-                    >
-                        <label>
-                            Name:
-                            <input type="text" required style={{ width: '100%', padding: '8px', marginTop: '4px' }} />
-                        </label>
-                        <label>
-                            Email:
-                            <input type="email" required style={{ width: '100%', padding: '8px', marginTop: '4px' }} />
-                        </label>
-                        <div style={{ marginTop: '10px', display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-                            <Button label="Cancel" onClick={() => setOpen(false)} />
-                            <Button label="Submit" type="submit" />
-                        </div>
-                    </form>
+                    <Dialog.Body>
+                        <Dialog.Title>Contact Us</Dialog.Title>
+                        <form
+                            style={{ display: 'flex', flexDirection: 'column', gap: '10px', minWidth: '300px' }}
+                            onSubmit={(e) => {
+                                e.preventDefault();
+                                alert('Form submitted!');
+                                setOpen(false);
+                            }}
+                        >
+                            <label>
+                                Name:
+                                <input type="text" required style={{ width: '100%', padding: '8px', marginTop: '4px' }} />
+                            </label>
+                            <label>
+                                Email:
+                                <input type="email" required style={{ width: '100%', padding: '8px', marginTop: '4px' }} />
+                            </label>
+                            <div style={{ marginTop: '10px', display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+                                <Button label="Cancel" onClick={() => setOpen(false)} />
+                                <Button label="Submit" type="submit" />
+                            </div>
+                        </form>
+                    </Dialog.Body>
                 </Dialog>
             </>
         );
@@ -283,13 +304,15 @@ export const ScrollableContent: Story = {
             <>
                 <Button label="Open Scrollable Content" onClick={() => setOpen(true)} />
                 <Dialog open={open} onClose={() => setOpen(false)} style={{ maxHeight: '200px' }}>
-                    <Dialog.Title data-testid="scrollable-title">Terms and Conditions</Dialog.Title>
-                    {Array.from({ length: 20 }).map((_, i) => (
-                        <p key={i}>This is paragraph {i + 1} of the terms and conditions. It contains important information.</p>
-                    ))}
-                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                        <Button label="Accept" onClick={() => setOpen(false)} />
-                    </div>
+                    <Dialog.Body>
+                        <Dialog.Title data-testid="scrollable-title">Terms and Conditions</Dialog.Title>
+                        {Array.from({ length: 20 }).map((_, i) => (
+                            <p key={i}>This is paragraph {i + 1} of the terms and conditions. It contains important information.</p>
+                        ))}
+                        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                            <Button label="Accept" onClick={() => setOpen(false)} />
+                        </div>
+                    </Dialog.Body>
                 </Dialog>
             </>
         );
@@ -327,20 +350,24 @@ export const MultipleDialogs: Story = {
             <>
                 <Button label="Open Dialog 1" onClick={() => setOpen1(true)} />
                 <Dialog open={open1} onClose={() => setOpen1(false)}>
-                    <h2>Dialog 1</h2>
-                    <p>First level dialog.</p>
-                    <div style={{ marginTop: '20px', display: 'flex', gap: '10px' }}>
-                        <Button label="Open Dialog 2" onClick={() => setOpen2(true)} />
-                        <Button label="Close Dialog 1" onClick={() => setOpen1(false)} />
-                    </div>
+                    <Dialog.Body>
+                        <h2>Dialog 1</h2>
+                        <p>First level dialog.</p>
+                        <div style={{ marginTop: '20px', display: 'flex', gap: '10px' }}>
+                            <Button label="Open Dialog 2" onClick={() => setOpen2(true)} />
+                            <Button label="Close Dialog 1" onClick={() => setOpen1(false)} />
+                        </div>
+                    </Dialog.Body>
                 </Dialog>
 
                 <Dialog open={open2} onClose={() => setOpen2(false)}>
-                    <Dialog.Title>Dialog 2</Dialog.Title>
-                    <p>Second level dialog (stacked).</p>
-                    <div style={{ marginTop: '20px', display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-                        <Button label="Close Dialog 2" onClick={() => setOpen2(false)} />
-                    </div>
+                    <Dialog.Body>
+                        <Dialog.Title>Dialog 2</Dialog.Title>
+                        <p>Second level dialog (stacked).</p>
+                        <div style={{ marginTop: '20px', display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+                            <Button label="Close Dialog 2" onClick={() => setOpen2(false)} />
+                        </div>
+                    </Dialog.Body>
                 </Dialog>
             </>
         );
@@ -387,12 +414,6 @@ export const MultipleDialogs: Story = {
         await userEvent.click(closeDialog2Btn);
 
         // Wait for Dialog 2 to close
-        // We need to wait for the animation to start first, then finish
-        // Or wait for it to be not visible, which implies animation done?
-        // Dialog close implementation waits for transitionend before calling dialog.close()
-        // So checking for not.toBeVisible() via waitFor is actually correct because element remains visible until close()
-        // But we can check animations too if we want to be fancy, but close() removes visibility.
-        // Let's stick to waitFor not.toBeVisible for closing as it relies on component logic to actually close.
         await waitFor(() => expect(dialog2).not.toBeVisible());
 
         // Verify Dialog 1 is still visible
@@ -420,11 +441,13 @@ export const ScrollClamp: Story = {
                     ))}
                 </div>
                 <Dialog open={open} onClose={() => setOpen(false)}>
-                    <Dialog.Title>Scroll Clamp Enabled</Dialog.Title>
-                    <p>Body scroll should be disabled via <code>overflow: hidden</code>.</p>
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
-                        <Button label="Close" onClick={() => setOpen(false)} />
-                    </div>
+                    <Dialog.Body>
+                        <Dialog.Title>Scroll Clamp Enabled</Dialog.Title>
+                        <p>Body scroll should be disabled via <code>overflow: hidden</code>.</p>
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
+                            <Button label="Close" onClick={() => setOpen(false)} />
+                        </div>
+                    </Dialog.Body>
                 </Dialog>
             </div>
         );
@@ -467,19 +490,21 @@ export const AutoFocusSecondInput: Story = {
             <>
                 <Button label="Open Focus Test Dialog" onClick={() => setOpen(true)} />
                 <Dialog open={open} onClose={() => setOpen(false)}>
-                    <Dialog.Title>Auto Focus Second Input</Dialog.Title>
-                    <input
-                        data-testid="first-input"
-                        placeholder="I am first (default focus?)"
-                        style={{ marginBottom: '10px', display: 'block' }}
-                    />
-                    <input
-                        data-testid="autofocus-input"
-                        data-autofocus
-                        placeholder="I should be focused"
-                        style={{ marginBottom: '10px', display: 'block' }}
-                    />
-                    <Button label="Close" onClick={() => setOpen(false)} />
+                    <Dialog.Body>
+                        <Dialog.Title>Auto Focus Second Input</Dialog.Title>
+                        <input
+                            data-testid="first-input"
+                            placeholder="I am first (default focus?)"
+                            style={{ marginBottom: '10px', display: 'block' }}
+                        />
+                        <input
+                            data-testid="autofocus-input"
+                            data-autofocus
+                            placeholder="I should be focused"
+                            style={{ marginBottom: '10px', display: 'block' }}
+                        />
+                        <Button label="Close" onClick={() => setOpen(false)} />
+                    </Dialog.Body>
                 </Dialog>
             </>
         );
@@ -503,6 +528,93 @@ export const AutoFocusSecondInput: Story = {
     },
 };
 
+export const StickyHeaderFooter: Story = {
+    render: () => {
+        const [open, setOpen] = useState(false);
+        return (
+            <>
+                <Button label="Open Sticky Dialog" onClick={() => setOpen(true)} />
+                <Dialog
+                    open={open}
+                    onClose={() => setOpen(false)}
+                    className="max-h-[300px]"
+                >
+                    <Dialog.Sticky align="top" className="justify-between items-center border-b border-gray-200">
+                        <Dialog.Title className="mb-0">Sticky Header</Dialog.Title>
+                        <Button label="✕" onClick={() => setOpen(false)} />
+                    </Dialog.Sticky>
+
+                    <Dialog.Body className="py-2">
+                        <p>Scroll down to see the header stay fixed and the footer appear at the bottom.</p>
+                        {Array.from({ length: 15 }).map((_, i) => (
+                            <p key={i} className="my-2">
+                                Paragraph {i + 1}: The content here is scrollable.
+                                Notice how the header remains visible at the top, and the footer is anchored at the bottom (or flushes to bottom of content).
+                            </p>
+                        ))}
+                    </Dialog.Body>
+
+                    <Dialog.Sticky align="bottom" className="justify-end border-t border-gray-200">
+                        <Button label="Cancel" onClick={() => setOpen(false)} />
+                        <Button label="Confirm" onClick={() => setOpen(false)} />
+                    </Dialog.Sticky>
+                </Dialog>
+            </>
+        );
+    },
+    play: async ({ canvasElement, step }) => {
+        const canvas = within(canvasElement);
+
+        await step('Open sticky dialog', async () => {
+            await userEvent.click(canvas.getByRole('button', { name: /Open Sticky Dialog/i }));
+        });
+
+        const dialog = canvasElement.querySelector('dialog');
+        if (!dialog) throw new Error('Dialog not found');
+
+        const withinDialog = within(dialog);
+
+        // Wait for dialog animation
+        await waitFor(() => expect(withinDialog.getByText('Sticky Header')).toBeVisible());
+
+        await step('Verify header sticks on scroll', async () => {
+            const headerText = withinDialog.getByText('Sticky Header');
+            const header = headerText.closest('div[class*="sticky"]');
+            expect(header).toBeTruthy();
+
+            // Get initial position
+            const initialRect = header!.getBoundingClientRect();
+
+            // Scroll the body, not the dialog, because sticky is now inside the dialog column layout
+            // Wait, Dialog.module.css: .dialog is display: flex column. .body is flex-grow. overflow-y: auto should be on .body?
+            // Actually, previously scrolling was on .dialog. 
+            // In new design: .dialog (flex col) -> .sticky (fixed-ish) + .body (overflow-y: auto).
+            // So we need to scroll the .body element!
+
+            const body = dialog.querySelector('div[class*="body"]');
+            if (!body) throw new Error('Dialog Body not found to scroll');
+
+            body.scrollTop = 100;
+            body.dispatchEvent(new Event('scroll'));
+
+            // Wait a tick for any layout updates
+            await new Promise(resolve => setTimeout(resolve, 100));
+
+            // Verify header is still visible
+            await expect(withinDialog.getByText('Sticky Header')).toBeVisible();
+
+            // Verify position
+            const scrolledRect = header!.getBoundingClientRect();
+            expect(Math.abs(scrolledRect.top - initialRect.top)).toBeLessThan(20);
+        });
+
+        await step('Close dialog', async () => {
+            await userEvent.click(withinDialog.getByRole('button', { name: /✕/i }));
+            await waitFor(() => expect(dialog).not.toHaveAttribute('open'));
+        });
+    }
+};
+
 export const TailwindExample: Story = {
     render: function TailwindExampleRender() {
         const [open, setOpen] = useState(false);
@@ -514,20 +626,53 @@ export const TailwindExample: Story = {
                     onClose={() => setOpen(false)}
                     className="bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-300 shadow-2xl"
                 >
-                    <Dialog.Title className="text-2xl font-bold text-purple-900 mb-4">Tailwind Styled Dialog</Dialog.Title>
-                    <p className="text-gray-700 mb-6">
-                        This dialog demonstrates Tailwind CSS compatibility with custom styling.
-                    </p>
-                    <div className="flex gap-3 justify-end">
-                        <button
-                            onClick={() => setOpen(false)}
-                            className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
-                        >
-                            Close
-                        </button>
-                    </div>
+                    <Dialog.Body>
+                        <Dialog.Title className="text-2xl font-bold text-purple-900 mb-4">Tailwind Styled Dialog</Dialog.Title>
+                        <p className="text-gray-700 mb-6">
+                            This dialog demonstrates Tailwind CSS compatibility with custom styling.
+                        </p>
+                        <div className="flex gap-3 justify-end">
+                            <button
+                                onClick={() => setOpen(false)}
+                                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </Dialog.Body>
                 </Dialog>
             </>
         );
     },
+};
+
+export const TailwindPaddingOverride: Story = {
+    render: () => {
+        const [open, setOpen] = useState(false);
+        return (
+            <>
+                <Button label="Open Custom Padding Dialog" onClick={() => setOpen(true)} />
+                <Dialog
+                    open={open}
+                    onClose={() => setOpen(false)}
+                >
+                    <div className="w-full h-32 bg-indigo-500 text-white flex items-center justify-center text-4xl font-bold p-8">
+                        Header Banner
+                    </div>
+                    <Dialog.Body className="p-8 space-y-4">
+                        <Dialog.Title>Zero-Conflict Padding</Dialog.Title>
+                        <p>
+                            This dialog has a full-width header image (no padding) and a body with extra large padding (p-8).
+                        </p>
+                        <p className="text-gray-500">
+                            Because we separated container logic from content logic, this "header" is just a direct child of the dialog, sitting naturally flush.
+                        </p>
+                        <div className="flex justify-end">
+                            <Button label="Understand" onClick={() => setOpen(false)} />
+                        </div>
+                    </Dialog.Body>
+                </Dialog>
+            </>
+        );
+    }
 };

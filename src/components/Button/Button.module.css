@@ -30,7 +30,7 @@
     }
 
     .button:focus-visible {
-        outline-offset: 4px;
-        outline: 2px auto -webkit-focus-ring-color;
+        outline-offset: 0.125rem;
+        outline: 0.125rem auto -webkit-focus-ring-color;
     }
 }

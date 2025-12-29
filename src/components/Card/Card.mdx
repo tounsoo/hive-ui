@@ -45,6 +45,34 @@ Images usually span the full width of the card. You can achieve this with negati
 
 <Canvas of={CardStories.WithImage} />
 
+### Card.Title
+
+Use `Card.Title` to consistently style card headings.
+
+```tsx
+<Card>
+  <Card.Title>My Card Title</Card.Title>
+  <p>Content</p>
+</Card>
+```
+
+### Card.Flush (Full Width Content)
+
+Use `Card.Flush` to wrap content (like images) that should bleed to the edges of the card.
+
+1.  **Wrapper Component**: Wrap your full-width content (images, maps) in `<Card.Flush>`.
+2.  **Automatic Margins**: The component automatically uses negative margins (based on `--card-padding`) to pull content to the edge.
+
+```tsx
+<Card>
+    {/* 1. Wrapper Component */}
+    <Card.Flush>
+        <img src={image} alt="Cover" />
+    </Card.Flush>
+    <Card.Title>Title Below Image</Card.Title>
+</Card>
+```
+
 ## Internal Design & Accessibility
 
 ### Interactiveness Approach (Overlay Pattern)
@@ -58,11 +86,31 @@ Because the interactive element is an empty overlay, it lacks visible text conte
 - The overlay handles the click event, so screen readers will perceive it as a single link/button properly.
 
 ### Nested Interactive Elements
-A common pattern is having a clickable card that *also* contains other clickable elements (like a "Favorite" button or "Learn More" link).
 
-To place interactive elements *on top* of this overlay, you must ensure they have:
-1. `position: relative` (or absolute) to create a new stacking context.
-2. `z-index: 2` (or higher) to sit strictly *above* the overlay (which has `z-index: 1`).
+A common pattern is having a clickable card that *also* contains other clickable elements (like a "Favorite" button).
+
+1.  **Stacking Context**: You must apply `position: relative` (or absolute) to the nested element to create a new stacking context.
+2.  **Layering**: Apply `z-index: 2` (or higher) to sit strictly *above* the card's main overlay (which has `z-index: 1`).
+3.  **Event Propagation**: Stop propagation on the nested element's click handler to prevent triggering the card's main action.
+
+```tsx
+<Card onClick={handleCardClick}>
+    <Card.Title>Main Card Action</Card.Title>
+    
+    {/* Nested Action */}
+    <Button 
+        onClick={(e) => {
+            e.stopPropagation(); // 3. Event Propagation
+            handleFavorite();
+        }}
+        style={{ 
+            position: 'relative', // 1. Stacking Context
+            zIndex: 2            // 2. Layering
+        }} 
+        label="Favorite" 
+    />
+</Card>
+```
 
 <Canvas of={CardStories.InteractiveWithNestedActions} />
 

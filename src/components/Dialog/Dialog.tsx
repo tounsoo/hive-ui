@@ -195,6 +195,13 @@ const BaseDialog = ({ open, onClose, children, className, resetOnClose = true, o
     );
 };
 
+import { DialogSticky } from './DialogSticky';
+import { DialogBody } from './DialogBody';
+
+BaseDialog.displayName = 'Dialog';
+
 export const Dialog = Object.assign(BaseDialog, {
     Title: DialogTitle,
+    Sticky: DialogSticky,
+    Body: DialogBody,
 });

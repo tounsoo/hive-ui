@@ -1,9 +1,9 @@
 @layer components {
     .dialog {
-        padding: 16px;
-        border-radius: 8px;
+        border-radius: 0.5rem;
         border: none;
         box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        min-width: 300px;
         max-width: 90vw;
         max-height: 90vh;
         margin: auto;
@@ -15,6 +15,22 @@
         /* Final state when open */
         opacity: 1;
         transform: translateY(0);
+
+        /* Critical for sticky bottom auto margin */
+        display: flex;
+        flex-direction: column;
+    }
+
+    .body {
+        padding: 1rem;
+        /* Ensure it grows to fill available space if dialog has height */
+        flex: 1 0 auto;
+        /* Allow body to scroll if content is long, while header/footer stay stickied */
+        overflow-y: auto;
+    }
+
+    .dialog:focus-visible {
+        outline: 0.125rem auto -webkit-focus-ring-color;
     }
 
     /* Initial state before opening */
@@ -58,5 +74,34 @@
         line-height: 1.25;
         color: #111827;
         /* Gray-900 */
+    }
+
+    .sticky {
+        position: sticky;
+        z-index: 10;
+        background-color: inherit;
+        /* Matches dialog bg */
+
+        display: flex;
+        gap: .25rem;
+
+        /* Standard padding matches .body to align content */
+        padding: 1rem;
+
+        /* No partial border radius here, we rely on parent clipping or we can add it if needed */
+    }
+
+    .stickyTop {
+        top: 0;
+        border-bottom: 1px solid #e5e7eb;
+        /* Optional separator */
+    }
+
+    .stickyBottom {
+        bottom: 0;
+        border-top: 1px solid #e5e7eb;
+        /* Optional separator */
+        margin-top: auto;
+        /* Push to bottom if content is short */
     }
 }

@@ -1,15 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { useRef, useState, useCallback, useEffect } from 'react';
-import { useVirtualGrid, type VirtualGridActionContext } from './useVirtualGrid';
-
-const meta: Meta = {
-    title: 'Hooks/useVirtualGrid',
-    parameters: {
-        layout: 'padded',
-    },
-};
-
-export default meta;
+import { useVirtualGrid, type VirtualGridActionContext, type UseVirtualGridOptions, type UseVirtualGridResult } from './useVirtualGrid';
 
 // Generate dummy data
 interface GridItem {
@@ -22,25 +13,79 @@ const myData: GridItem[] = Array.from({ length: 50 }).map((_, i) => ({
     title: `Hook Test Row ${i}`
 }));
 
-export const HookTest: StoryObj = {
-    render: () => {
+const meta = {
+    title: 'Hooks/useVirtualGrid',
+    excludeStories: ['VirtualGridResultDocs'],
+    parameters: {
+        layout: 'padded',
+        docs: {
+            description: {
+                component: 'A custom hook for virtualizing grids and lists with keyboard navigation support.',
+            },
+        },
+    },
+    argTypes: {
+        columnCount: {
+            control: { type: 'number', min: 1, max: 5 },
+            description: 'Number of columns in the grid.',
+            table: {
+                defaultValue: { summary: '1' },
+            }
+        },
+        overscan: {
+            control: { type: 'number' },
+            description: 'Number of items to render outside the visible area.',
+            table: {
+                defaultValue: { summary: '5' },
+            }
+        },
+        containerHeight: {
+            control: { type: 'text' },
+            description: 'Height of the scrolling container (e.g. "300px").',
+        },
+        endReachedThreshold: {
+            control: { type: 'number' },
+            description: 'Threshold for infinite scroll loading.',
+        },
+        items: { table: { disable: true } },
+        parentRef: { table: { disable: true } },
+        estimateSize: { table: { disable: true } },
+        onItemAction: { table: { disable: true } },
+        onEndReached: { table: { disable: true } },
+    },
+} satisfies Meta<UseVirtualGridOptions<GridItem>>;
+
+export default meta;
+
+/**
+ * A dummy component used to generate documentation for the hook's return values.
+ * Not intended for use in the UI.
+ */
+export const VirtualGridResultDocs = (_props: UseVirtualGridResult) => <div />;
+
+type Story = StoryObj<UseVirtualGridOptions<GridItem>>;
+
+export const HookTest: Story = {
+    args: {
+        items: myData,
+        columnCount: 1,
+        overscan: 5,
+        containerHeight: '300px',
+    },
+    render: (args) => {
         const parentRef = useRef<HTMLDivElement>(null);
 
-        // Use the hook
+        // Use the hook with args from controls
         const { virtualRows, gridContainerProps, gridContentProps, focus, getRowProps } = useVirtualGrid({
-            items: myData,
-            columnCount: 1,
+            ...args,
             parentRef,
             estimateSize: () => 40,
-            containerHeight: '300px',
         });
 
         return (
             <div className="p-4">
                 <h3 className="mb-2">Hook Focus State: {JSON.stringify(focus)}</h3>
 
-                {/* Manual Scroll Container Implementation */}
-                {/* Style is now partly provided by gridContainerProps due to containerHeight opt */}
                 <div
                     ref={parentRef}
                     {...gridContainerProps}
@@ -50,10 +95,10 @@ export const HookTest: StoryObj = {
                         border: '1px solid #ccc'
                     }}
                 >
-                    {/* Inner Container for Total Height */}
                     <div {...gridContentProps}>
                         {virtualRows.map(row => {
-                            const item = myData[row.index];
+                            const item = args.items[row.index];
+                            if (!item) return null;
                             const rowProps = getRowProps(row);
                             return (
                                 <div
@@ -79,12 +124,17 @@ export const HookTest: StoryObj = {
     }
 };
 
-export const TwoColumnAction: StoryObj = {
-    render: () => {
+export const TwoColumnAction: Story = {
+    args: {
+        items: myData,
+        columnCount: 2,
+        overscan: 5,
+        containerHeight: '300px',
+    },
+    render: (args) => {
         const parentRef = useRef<HTMLDivElement>(null);
 
         // A. Shared Business Logic for Actions (Keyboard or Mouse)
-        // Accepts the Context from the hook, or a manual context from mouse
         const handleAction = (ctx: VirtualGridActionContext<GridItem>) => {
             const { item, setFocus, row, col } = ctx;
 
@@ -97,11 +147,9 @@ export const TwoColumnAction: StoryObj = {
 
         // 1. Hook with 2 columns
         const { virtualRows, gridContainerProps, gridContentProps, focus, setFocus, getRowProps } = useVirtualGrid({
-            items: myData,
-            columnCount: 2, // <--- 2 Columns
+            ...args,
             parentRef,
             estimateSize: () => 40,
-            containerHeight: '300px',
             // B. Wired up directly to the hook
             onItemAction: (ctx) => {
                 if (ctx.col === 1) {
@@ -128,7 +176,8 @@ export const TwoColumnAction: StoryObj = {
                 >
                     <div {...gridContentProps}>
                         {virtualRows.map(row => {
-                            const item = myData[row.index];
+                            const item = args.items[row.index];
+                            if (!item) return null;
                             const rowProps = getRowProps(row);
                             const isRowFocused = focus.row === row.index;
 
@@ -214,7 +263,7 @@ const fetchMockData = (limit: number): Promise<GridItem[]> => {
     });
 };
 
-export const InfiniteScroll: StoryObj = {
+export const InfiniteScroll: Story = {
     render: () => {
         const parentRef = useRef<HTMLDivElement>(null);
 

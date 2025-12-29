@@ -1,7 +1,7 @@
 import React from 'react';
 import styles from './Card.module.css';
 import { CardTitle } from './CardTitle';
-import { CardFlush } from './CardFlush';
+import { CardBody } from './CardBody';
 
 export type CardProps =
     | (Omit<React.ComponentProps<'div'>, 'onClick'> & {
@@ -96,5 +96,5 @@ BaseCard.displayName = 'Card';
 
 export const Card = Object.assign(BaseCard, {
     Title: CardTitle,
-    Flush: CardFlush
+    Body: CardBody
 });
