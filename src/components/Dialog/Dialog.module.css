@@ -48,4 +48,15 @@
     .dialog:not([open])::backdrop {
         opacity: 0;
     }
+
+    .title {
+        margin: 0 0 0.75rem 0;
+        font-size: 1.25rem;
+        font-weight: 600;
+        text-box-trim: trim-end;
+        text-box-edge: cap alphabetic;
+        line-height: 1.25;
+        color: #111827;
+        /* Gray-900 */
+    }
 }

@@ -30,9 +30,9 @@ export const Default: Story = {
                     setOpen(false);
                     args.onClose();
                 }} onCancel={() => console.log('Dialog canceled')}>
-                    <h2>Dialog Title</h2>
+                    <Dialog.Title>Dialog Title</Dialog.Title>
                     <p>This is a native dialog element.</p>
-                    <div style={{ marginTop: '20px', display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+                    <div className="flex gap-2 justify-end mt-2">
                         <Button label="Close" onClick={() => setOpen(false)} />
                     </div>
                 </Dialog>
@@ -69,8 +69,8 @@ export const CloseOnBackdrop: Story = {
                 <Dialog open={open} onClose={() => {
                     setOpen(false);
                     args.onClose();
-                }}>
-                    <h2>Backdrop Test</h2>
+                }} onCancel={() => console.log('Dialog canceled')}>
+                    <Dialog.Title>Backdrop Test</Dialog.Title>
                     <p>Click outside to close.</p>
                 </Dialog>
             </>
@@ -191,7 +191,7 @@ export const ResetOnClose: Story = {
             <>
                 <Button label="Open Dialog" onClick={() => setOpen(true)} />
                 <Dialog open={open} onClose={() => setOpen(false)}>
-                    <h2>Form with Reset (Default)</h2>
+                    <Dialog.Title>Form with Reset (Default)</Dialog.Title>
                     <p>Type something and close the dialog. Content will reset when reopened.</p>
                     <form style={{ display: 'flex', flexDirection: 'column', gap: '10px', minWidth: '300px', marginTop: '10px' }}>
                         <label>
@@ -219,7 +219,7 @@ export const PreserveState: Story = {
             <>
                 <Button label="Open Dialog" onClick={() => setOpen(true)} />
                 <Dialog open={open} onClose={() => setOpen(false)} resetOnClose={false}>
-                    <h2>Form with Preserved State</h2>
+                    <Dialog.Title>Form with Preserved State</Dialog.Title>
                     <p>Type something and close the dialog. Content will be preserved when reopened.</p>
                     <form style={{ display: 'flex', flexDirection: 'column', gap: '10px', minWidth: '300px', marginTop: '10px' }}>
                         <label>
@@ -248,7 +248,7 @@ export const WithForm: Story = {
             <>
                 <Button label="Open Form Dialog" onClick={() => setOpen(true)} />
                 <Dialog open={open} onClose={() => setOpen(false)}>
-                    <h2>Contact Us</h2>
+                    <Dialog.Title>Contact Us</Dialog.Title>
                     <form
                         style={{ display: 'flex', flexDirection: 'column', gap: '10px', minWidth: '300px' }}
                         onSubmit={(e) => {
@@ -283,7 +283,7 @@ export const ScrollableContent: Story = {
             <>
                 <Button label="Open Scrollable Content" onClick={() => setOpen(true)} />
                 <Dialog open={open} onClose={() => setOpen(false)} style={{ maxHeight: '200px' }}>
-                    <h2 data-testid="scrollable-title">Terms and Conditions</h2>
+                    <Dialog.Title data-testid="scrollable-title">Terms and Conditions</Dialog.Title>
                     {Array.from({ length: 20 }).map((_, i) => (
                         <p key={i}>This is paragraph {i + 1} of the terms and conditions. It contains important information.</p>
                     ))}
@@ -336,7 +336,7 @@ export const MultipleDialogs: Story = {
                 </Dialog>
 
                 <Dialog open={open2} onClose={() => setOpen2(false)}>
-                    <h2>Dialog 2</h2>
+                    <Dialog.Title>Dialog 2</Dialog.Title>
                     <p>Second level dialog (stacked).</p>
                     <div style={{ marginTop: '20px', display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
                         <Button label="Close Dialog 2" onClick={() => setOpen2(false)} />
@@ -420,7 +420,7 @@ export const ScrollClamp: Story = {
                     ))}
                 </div>
                 <Dialog open={open} onClose={() => setOpen(false)}>
-                    <h2>Scroll Clamp Enabled</h2>
+                    <Dialog.Title>Scroll Clamp Enabled</Dialog.Title>
                     <p>Body scroll should be disabled via <code>overflow: hidden</code>.</p>
                     <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
                         <Button label="Close" onClick={() => setOpen(false)} />
@@ -467,7 +467,7 @@ export const AutoFocusSecondInput: Story = {
             <>
                 <Button label="Open Focus Test Dialog" onClick={() => setOpen(true)} />
                 <Dialog open={open} onClose={() => setOpen(false)}>
-                    <h2>Auto Focus Second Input</h2>
+                    <Dialog.Title>Auto Focus Second Input</Dialog.Title>
                     <input
                         data-testid="first-input"
                         placeholder="I am first (default focus?)"
@@ -514,7 +514,7 @@ export const TailwindExample: Story = {
                     onClose={() => setOpen(false)}
                     className="bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-300 shadow-2xl"
                 >
-                    <h2 className="text-2xl font-bold text-purple-900 mb-4">Tailwind Styled Dialog</h2>
+                    <Dialog.Title className="text-2xl font-bold text-purple-900 mb-4">Tailwind Styled Dialog</Dialog.Title>
                     <p className="text-gray-700 mb-6">
                         This dialog demonstrates Tailwind CSS compatibility with custom styling.
                     </p>

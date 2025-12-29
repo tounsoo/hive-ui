@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, type DialogHTMLAttributes } from 'react';
 import styles from './Dialog.module.css';
+import { DialogTitle } from './DialogTitle';
+import { DialogContext } from './DialogContext';
 
 export interface DialogProps extends DialogHTMLAttributes<HTMLDialogElement> {
     /**
@@ -37,7 +39,7 @@ export interface DialogProps extends DialogHTMLAttributes<HTMLDialogElement> {
  *   <button onClick={() => setIsOpen(false)}>Close</button>
  * </Dialog>
  */
-export const Dialog = ({ open, onClose, children, className, resetOnClose = true, onCancel, onClick, ...rest }: DialogProps) => {
+const BaseDialog = ({ open, onClose, children, className, resetOnClose = true, onCancel, onClick, 'aria-labelledby': ariaLabelledBy, ...rest }: DialogProps) => {
     const dialogRef = useRef<HTMLDialogElement>(null);
     const [resetKey, setResetKey] = React.useState(0);
 
@@ -165,17 +167,34 @@ export const Dialog = ({ open, onClose, children, className, resetOnClose = true
         onCancel?.(event);
     };
 
+    // State to hold the ID registered by the Dialog.Title child
+    const [labelledById, setLabelledById] = React.useState<string>();
+
+    const contextValue = React.useMemo(() => ({
+        setTitleId: setLabelledById
+    }), []);
+
+    // Priority: Prop > Registered ID
+    const finalLabelledBy = ariaLabelledBy || labelledById;
+
     return (
-        <dialog
-            key={resetKey}
-            ref={dialogRef}
-            tabIndex={-1}
-            className={`${styles.dialog} ${className || ''}`.trim()}
-            onClick={handleBackdropClick}
-            onCancel={handleCancel}
-            {...rest}
-        >
-            {children}
-        </dialog>
+        <DialogContext.Provider value={contextValue}>
+            <dialog
+                key={resetKey}
+                ref={dialogRef}
+                tabIndex={-1}
+                className={`${styles.dialog} ${className || ''}`.trim()}
+                onClick={handleBackdropClick}
+                onCancel={handleCancel}
+                aria-labelledby={finalLabelledBy}
+                {...rest}
+            >
+                {children}
+            </dialog>
+        </DialogContext.Provider>
     );
 };
+
+export const Dialog = Object.assign(BaseDialog, {
+    Title: DialogTitle,
+});

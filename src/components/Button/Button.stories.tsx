@@ -74,7 +74,7 @@ export const WithIcons: Story = {
 
 export const TailwindExample: Story = {
     args: {
-        label: 'Tailwind Button',
-        className: 'bg-red-600 text-white hover:bg-red-700',
+        label: 'Primary Button Example',
+        className: 'bg-cyan-700 text-white hover:bg-cyan-800',
     },
 };

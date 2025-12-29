@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { userEvent, within, expect, fn } from '@storybook/test';
 import { Card } from './Card';
 import cardImage from '../../assets/card-placeholder.png';
+import { Button } from '../Button';
 
 const meta: Meta<typeof Card> = {
     title: 'Components/Card',
@@ -17,12 +18,12 @@ type Story = StoryObj<typeof Card>;
 export const Default: Story = {
     args: {
         children: (
-            <div>
-                <h3 style={{ margin: '0 0 8px 0', fontSize: '1.25rem' }}>Card Title</h3>
+            <>
+                <Card.Title>Card Title</Card.Title>
                 <p style={{ margin: 0, color: '#666' }}>
                     This is a basic card. It is not interactive itself, but contains content.
                 </p>
-            </div>
+            </>
         ),
         style: { width: '300px' },
     },
@@ -32,14 +33,15 @@ export const WithImage: Story = {
     args: {
         children: (
             <>
-                <img
-                    src={cardImage}
-                    alt="Abstract Blue and Purple Shapes"
-                    style={{ width: 'calc(100% + 32px)', margin: '-16px -16px 16px -16px', display: 'block' }}
-                />
-                <h3 style={{ margin: '0 0 8px 0', fontSize: '1.25rem' }}>Image Card</h3>
+                <Card.Flush>
+                    <img
+                        src={cardImage}
+                        alt="Abstract Blue and Purple Shapes"
+                    />
+                </Card.Flush>
+                <Card.Title>Image Card</Card.Title>
                 <p style={{ margin: 0, color: '#666' }}>
-                    This card has an image that bleeds to the edge (managed by negative margins here for demo).
+                    This card has an image that bleeds to the edge (managed by generic Card.Flush component).
                 </p>
             </>
         ),
@@ -52,12 +54,12 @@ export const InteractiveLink: Story = {
         href: '#',
         'aria-label': 'Go to example link',
         children: (
-            <div>
-                <h3 style={{ margin: '0 0 8px 0', fontSize: '1.25rem' }}>Link Card</h3>
+            <>
+                <Card.Title>Link Card</Card.Title>
                 <p style={{ margin: 0, color: '#666' }}>
                     This entire card is a link. Hover over it to see the cursor change.
                 </p>
-            </div>
+            </>
         ),
         style: { width: '300px' },
     },
@@ -75,12 +77,12 @@ export const InteractiveButton: Story = {
         onClick: fn(),
         'aria-label': 'Perform card action',
         children: (
-            <div>
-                <h3 style={{ margin: '0 0 8px 0', fontSize: '1.25rem' }}>Button Card</h3>
+            <>
+                <Card.Title>Button Card</Card.Title>
                 <p style={{ margin: 0, color: '#666' }}>
                     This entire card is a button. Click it to trigger an alert.
                 </p>
-            </div>
+            </>
         ),
         style: { width: '300px' },
     },
@@ -104,7 +106,7 @@ export const InteractiveWithNestedActions: Story = {
             aria-label="View Details"
             style={{ width: '300px' }}
         >
-            <h3 style={{ margin: '0 0 8px 0', fontSize: '1.25rem' }}>Nested Actions</h3>
+            <Card.Title>Nested Actions</Card.Title>
             <p style={{ marginBottom: '16px', color: '#666' }}>
                 Clicking the text triggers the card.
             </p>
@@ -114,42 +116,24 @@ export const InteractiveWithNestedActions: Story = {
                   IMPORTANT: Nested interactive elements need z-index > 1 
                   and position: relative to sit above the card's overlay.
                 */}
-                <button
+                <Button
                     onClick={(e) => {
                         e.stopPropagation();
                         console.log('Secondary Button Clicked!');
                     }}
-                    style={{
-                        position: 'relative',
-                        zIndex: 2,
-                        padding: '8px 16px',
-                        borderRadius: '4px',
-                        border: '1px solid #ccc',
-                        background: 'white',
-                        cursor: 'pointer'
-                    }}
-                >
-                    Secondary Action
-                </button>
+                    style={{ zIndex: 2 }}
+                    label="Learn More"
+                />
 
-                <button
+                <Button
                     onClick={(e) => {
                         e.stopPropagation();
                         console.log('Tertiary Button Clicked!');
                     }}
-                    style={{
-                        position: 'relative',
-                        zIndex: 2,
-                        padding: '8px 16px',
-                        borderRadius: '4px',
-                        border: 'none',
-                        background: '#3b82f6',
-                        color: 'white',
-                        cursor: 'pointer'
-                    }}
-                >
-                    Primary Action
-                </button>
+                    style={{ zIndex: 2 }}
+                    className="z-2 bg-cyan-700 text-white hover:bg-cyan-800"
+                    label="Add to Cart"
+                />
             </div>
         </Card>
     ),
@@ -162,8 +146,8 @@ export const InteractiveWithNestedActions: Story = {
         await expect(cardButton).toBeInTheDocument();
 
         // 2. Verify Nested Buttons
-        const secondaryBtn = canvas.getByRole('button', { name: /secondary action/i });
-        const primaryBtn = canvas.getByRole('button', { name: /primary action/i });
+        const secondaryBtn = canvas.getByRole('button', { name: /learn more/i });
+        const primaryBtn = canvas.getByRole('button', { name: /add to cart/i });
 
         await expect(secondaryBtn).toBeInTheDocument();
         await expect(primaryBtn).toBeInTheDocument();

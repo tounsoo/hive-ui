@@ -1,8 +1,11 @@
 @layer components {
     .button {
-        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0.5rem;
         border: none;
-        padding: 6px 12px;
+        padding-inline: 0.875rem;
         font-size: 0.875rem;
         font-weight: 500;
         font-family: inherit;
@@ -12,6 +15,10 @@
         transition: background-color 0.25s, border-color 0.25s;
         text-decoration: none;
         text-box-trim: trim-both;
+        text-box-edge: cap alphabetic;
+        text-wrap: nowrap;
+        height: 2rem;
+        gap: 0.5rem;
     }
 
     .button:hover {

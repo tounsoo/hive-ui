@@ -1,14 +1,16 @@
-import React, { forwardRef } from 'react';
+import React from 'react';
 import styles from './Card.module.css';
+import { CardTitle } from './CardTitle';
+import { CardFlush } from './CardFlush';
 
 export type CardProps =
-    | (Omit<React.HTMLAttributes<HTMLDivElement>, 'onClick'> & {
+    | (Omit<React.ComponentProps<'div'>, 'onClick'> & {
         href?: never;
         onClick?: never;
         'aria-label'?: string;
         'aria-labelledby'?: string;
     })
-    | (Omit<React.HTMLAttributes<HTMLDivElement>, 'onClick'> & {
+    | (Omit<React.ComponentProps<'div'>, 'onClick'> & {
         /**
          * URL to navigate to when the card is clicked.
          * Renders an accessible <a> overlay.
@@ -39,7 +41,7 @@ export type CardProps =
  * `position: relative` (or absolute) AND `z-index: 2` (or higher) to sit above the overlay.
  * Otherwise, clicking them will trigger the Card's action instead.
  */
-export const Card = forwardRef<HTMLDivElement, CardProps>((props, ref) => {
+export const BaseCard = (props: CardProps) => {
     // Destructure common props. 
     // We cast to access potential interactive props safely, 
     // relying on the conditional rendering logic to respect the types.
@@ -50,6 +52,7 @@ export const Card = forwardRef<HTMLDivElement, CardProps>((props, ref) => {
         onClick,
         'aria-label': ariaLabel,
         'aria-labelledby': ariaLabelledBy,
+        ref,
         ...rest
     } = props;
 
@@ -87,6 +90,11 @@ export const Card = forwardRef<HTMLDivElement, CardProps>((props, ref) => {
             {children}
         </div>
     );
-});
+};
 
-Card.displayName = 'Card';
+BaseCard.displayName = 'Card';
+
+export const Card = Object.assign(BaseCard, {
+    Title: CardTitle,
+    Flush: CardFlush
+});

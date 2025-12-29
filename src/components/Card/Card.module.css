@@ -1,15 +1,59 @@
 @layer components {
     .card {
-        border-radius: 16px;
-        border: 1px solid #e5e7eb;
+        --card-padding: 1rem;
+        --focus-ring-width: 0.125rem;
+
+        border-radius: 1rem;
+        border: 0.0625rem solid #e5e7eb;
         /* Light gray */
-        padding: 16px;
+        padding: var(--card-padding);
         position: relative;
         overflow: hidden;
         background-color: #ffffff;
         transition: transform 0.2s ease, box-shadow 0.2s ease;
         display: flex;
         flex-direction: column;
+        box-sizing: border-box;
+    }
+
+    /* 
+     * A container that breaks out of the card's padding to be flush with the edges.
+     * Useful for images, banners, or full-width sections.
+     */
+    .flush {
+        width: calc(100% + (var(--card-padding) * 2));
+        margin-left: calc(var(--card-padding) * -1);
+        margin-right: calc(var(--card-padding) * -1);
+
+        /* Default spacing below flush content */
+        margin-bottom: var(--card-padding);
+    }
+
+    /* Ensure content inside fills the flush container */
+    .flush>* {
+        display: block;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .flush>img,
+    .flush>video {
+        object-fit: cover;
+    }
+
+    /* If flush is the first item, pull it up to the top edge */
+    .flush:first-child {
+        margin-top: calc(var(--card-padding) * -1);
+        border-top-left-radius: 1rem;
+        /* Slightly less than card radius (16px) - 1px border */
+        border-top-right-radius: 1rem;
+    }
+
+    /* If flush is the last item, pull it down to the bottom edge */
+    .flush:last-child {
+        margin-bottom: calc(var(--card-padding) * -1);
+        border-bottom-left-radius: 1rem;
+        border-bottom-right-radius: 1rem;
     }
 
     .interactive:hover {
@@ -23,6 +67,7 @@
 
     .overlay {
         position: absolute;
+        border-radius: calc(1rem - var(--focus-ring-width));
         inset: 0;
         z-index: 1;
         width: 100%;
@@ -33,13 +78,25 @@
         background: transparent;
         cursor: pointer;
         text-indent: -9999px;
+        box-sizing: border-box;
         /* Hide text visually if any (though we usually won't have any) */
     }
 
     /* Ensure focus styles on the overlay are visible */
     .overlay:focus-visible {
-        outline: 2px solid #3b82f6;
+        outline: var(--focus-ring-width) solid #3b82f6;
         /* Blue-500 */
-        outline-offset: -2px;
+        outline-offset: calc(var(--focus-ring-width) * -1);
+    }
+
+    .title {
+        margin: 0 0 0.5rem 0;
+        font-size: 1.25rem;
+        font-weight: 600;
+        text-box-trim: trim-end;
+        text-box-edge: cap alphabetic;
+        color: #111827;
+        /* Gray-900 */
+        line-height: 1.25;
     }
 }
