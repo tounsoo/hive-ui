@@ -114,7 +114,7 @@ export function useVirtualGrid<T>({
     const gridContainerProps: React.HTMLAttributes<HTMLElement> = {
         role: 'grid',
         tabIndex: 0,
-        'aria-activedescendant': `cell-${focus.row}-${focus.col}`,
+        'aria-activedescendant': items.length > 0 ? `cell-${focus.row}-${focus.col}` : undefined,
         onKeyDown: handleKeyDown,
         style: {
             height: containerHeight,
@@ -139,6 +139,7 @@ export function useVirtualGrid<T>({
 
     // 7. Inner Container Props
     const gridContentProps: React.HTMLAttributes<HTMLDivElement> = {
+        role: 'rowgroup',
         style: {
             height: `${rowVirtualizer.getTotalSize()}px`,
             width: '100%',

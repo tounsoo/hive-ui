@@ -60,6 +60,9 @@ export const Default: Story = {
         await waitFor(() => expect(dialog).toBeVisible());
         await expect(within(dialog).getByText('Dialog Title')).toBeVisible();
 
+        // Verify focus fallback (no autofocus element -> focus dialog)
+        await waitFor(() => expect(dialog).toHaveFocus());
+
         // Close via button
         const closeButton = within(dialog).getByRole('button', { name: /close/i });
         await userEvent.click(closeButton);
@@ -525,6 +528,42 @@ export const AutoFocusSecondInput: Story = {
         await waitFor(() => expect(secondInput).toHaveFocus());
 
         expect(firstInput).not.toHaveFocus();
+    },
+};
+
+export const NativeAutoFocus: Story = {
+    render: () => {
+        const [open, setOpen] = useState(false);
+        return (
+            <>
+                <Button label="Open Native AutoFocus" onClick={() => setOpen(true)} />
+                <Dialog open={open} onClose={() => setOpen(false)}>
+                    <Dialog.Body>
+                        <Dialog.Title>Native Auto Focus</Dialog.Title>
+                        <input
+                            placeholder="Data Focus"
+                            style={{ marginBottom: '10px', display: 'block' }}
+                        />
+                        <input
+                            {...{ autofocus: 'true' }} // Force attribute for testing fallback branch
+                            data-testid="native-autofocus"
+                            placeholder="I have autoFocus"
+                            style={{ marginBottom: '10px', display: 'block' }}
+                        />
+                        <Button label="Close" onClick={() => setOpen(false)} />
+                    </Dialog.Body>
+                </Dialog>
+            </>
+        );
+    },
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        await userEvent.click(canvas.getByRole('button', { name: /open native autofocus/i }));
+        const dialog = await canvas.findByRole('dialog');
+        await waitFor(() => expect(dialog).toBeVisible());
+
+        const input = within(dialog).getByTestId('native-autofocus');
+        await waitFor(() => expect(input).toHaveFocus());
     },
 };
 

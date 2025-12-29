@@ -1,0 +1,79 @@
+import { Meta, Controls, Canvas, Story } from '@storybook/addon-docs/blocks';
+import * as InputStories from './Input.stories';
+import { Input } from './Input';
+
+<Meta of={InputStories} />
+
+# Input
+
+The `Input` component is a low-level, pure primitive for capturing user text input. It is designed to be composed with external labels and helper text, rather than encapsulating them. This ensures maximum flexibility in layout and form handling.
+
+## Import
+
+```tsx
+import { Input } from '@hive-ui/components';
+```
+
+## Props
+
+<Controls />
+
+## Usage
+
+### Basic Example
+
+The Input component *must* be identified by either an `id` or `name` prop to encourage accessibility. It relies on external `<label>` elements.
+
+```tsx
+<label htmlFor="email" className="block text-sm font-medium mb-1">
+  Email Address
+</label>
+<Input id="email" type="email" placeholder="you@example.com" />
+```
+
+<Canvas of={InputStories.WithLabel} />
+
+### Error State
+
+Pass the `error` prop to indicate validation failure. This sets `aria-invalid="true"` and updates the styling (red border and text).
+
+```tsx
+<Input id="username-error" error defaultValue="invalid-user" />
+```
+
+<Canvas of={InputStories.ErrorState} />
+
+### Disabled State
+
+The Input uses `aria-disabled` instead of the native `disabled` attribute to ensure the element remains focusable for screen reader users, while still being immutable (`readOnly`) and visually disabled.
+
+```tsx
+<Input id="disabled-input" disabled defaultValue="Cannot edit this" />
+```
+
+<Canvas of={InputStories.Disabled} />
+
+## Accessibility
+
+**This section is critical and must be comprehensive.**
+
+-   **Semantic HTML**: Uses the native `<input>` element.
+-   **Prop Requirements**: Strictly enforces the presence of either `id` or `name` via TypeScript to ensure the input can be properly labeled or identified in forms.
+-   **Disabled Pattern**: Uses `aria-disabled="true"` combined with `readOnly` instead of native `disabled`.
+    -   **Why?** Native `disabled` inputs are removed from the tab order. Screen reader users navigating by Tab might miss the input entirely.
+    -   **Behavior**: The input remains in the tab order (focusable), announces as "disabled" or "dimmed", and prevents modification.
+-   **Error Handling**:
+    -   Use the `error` prop to toggle `aria-invalid`.
+    -   Ensure visible error messages are linked via `aria-describedby` (implemented externally).
+-   **Focus Indicators**: Uses a standardised double-layer focus ring (Blue Border + White Gap + Faint Ring) which is high-contrast and follows the active theme.
+
+## Internal Design
+
+### Style Encapsulation
+The component uses CSS Modules (`Input.module.css`) with **no global variable dependencies**. All colors and spacing are hardcoded or use standard tokens, ensuring the component renders consistently in any context.
+
+### Focus Ring Standard
+Implements the "Double Inset" focus ring pattern:
+1.  **Blue Edge**: `0.0625rem` solid blue via border or inset shadow.
+2.  **White Gap**: `0.0625rem` solid white inset shadow to distinguish the ring from the input background.
+3.  **Faint Ring**: `0.125rem` solid faint blue outset shadow for visibility.

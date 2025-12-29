@@ -21,16 +21,25 @@
         gap: 0.5rem;
     }
 
-    .button:hover {
+    .button:not([aria-disabled="true"]):hover {
         background-color: #dddddd;
     }
 
-    .button:active {
+    .button:not([aria-disabled="true"]):active {
         background-color: #cccccc;
     }
 
+    .button[aria-disabled="true"] {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
     .button:focus-visible {
-        outline-offset: 0.125rem;
-        outline: 0.125rem auto -webkit-focus-ring-color;
+        outline: none;
+        /* Stack: Blue Edge (0-1px), White Gap (1-2px), Faint Ring (Outset 2px) */
+        box-shadow:
+            inset 0 0 0 0.0625rem #3b82f6,
+            inset 0 0 0 0.125rem #fff,
+            0 0 0 0.25rem color(from #3b82f6 srgb r g b / 0.2);
     }
 }

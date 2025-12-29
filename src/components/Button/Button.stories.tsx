@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { userEvent, within, expect } from '@storybook/test';
+import { userEvent, within, expect, fn } from '@storybook/test';
 import { Button } from './Button';
 
 const meta = {
@@ -76,5 +76,25 @@ export const TailwindExample: Story = {
     args: {
         label: 'Primary Button Example',
         className: 'bg-cyan-700 text-white hover:bg-cyan-800',
+    },
+};
+
+export const DisabledInteraction: Story = {
+    args: {
+        label: 'Disabled Click',
+        disabled: true,
+        onClick: fn(),
+    },
+    play: async ({ canvasElement, args }) => {
+        const canvas = within(canvasElement);
+        const button = canvas.getByRole('button', { name: /disabled click/i });
+
+        await expect(button).toHaveAttribute('aria-disabled', 'true');
+
+        // Attempt click
+        await userEvent.click(button);
+
+        // Verify onClick was NOT called
+        await expect(args.onClick).not.toHaveBeenCalled();
     },
 };

@@ -10,11 +10,11 @@ This document serves as a guide for writing and maintaining documentation in the
 ## Structure
 Standard MDX files should follow this structure:
 
-1.  **Date/Meta**: Standard Storybook meta import.
+1.  **Date/Meta**: Standard Storybook meta import. `import { Meta, Controls, Canvas, Story } from '@storybook/addon-docs/blocks';`
 2.  **Title**: Component name as an H1 Header (`# ComponentName`). Do not use generic Storybook blocks like `<Title />`.
 3.  **Description**: Broad overview of the component as a standard Markdown paragraph. Do not use `<Description />`.
 4.  **Import**: Code snippet showing how to import the component.
-5.  **Props / Arguments**: Table or description of key props. For hooks, document **Return Values** using `<ArgTypes />`.
+5.  **Props / Arguments**: Table or description of key props using `<Controls />`. For hooks, document **Return Values**.
 6.  **Usage**: Examples of common use cases.
 7.  **Accessibility**: Specific accessibility features, requirements, or behaviors.
 8.  **Internal Design / Architecture**: (Optional but recommended) Explanation of non-obvious implementation details (e.g., event handling, DOM structure choices, state management).

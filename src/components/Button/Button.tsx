@@ -4,6 +4,9 @@ import styles from './Button.module.css';
 /**
  * Base properties shared by all Button variations.
  */
+/**
+ * Base properties shared by all Button variations.
+ */
 type BaseProps = {
   /** The text content to display inside the button */
   label: string;
@@ -11,6 +14,12 @@ type BaseProps = {
   leading?: React.ReactNode;
   /** Optional element to display after the label (e.g., an icon) */
   trailing?: React.ReactNode;
+  /**
+   * Whether the button is disabled. 
+   * When true, `aria-disabled` is set to true, and interactions are prevented.
+   * The button remains focusable.
+   */
+  disabled?: boolean;
 };
 
 type ButtonAsButton = BaseProps &
@@ -45,13 +54,34 @@ export type ButtonProps = ButtonAsButton | ButtonAsAnchor;
  * <Button label="Save" leading={<span role="img" aria-label="save">💾</span>} />
  */
 export const Button = (props: ButtonProps) => {
-  const { label, leading, trailing, className, ...rest } = props;
+  const { label, leading, trailing, className, disabled, onClick, ...rest } = props;
+
   const combinedClassName = `${styles.button} ${className || ''}`.trim();
 
+  // Helper to prevent interactions if disabled
+  const handleClick = (e: React.MouseEvent) => {
+    if (disabled) {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+    (onClick as React.MouseEventHandler)?.(e);
+  };
+
   if (props.href) {
+    // We need to cast rest to Anchor props, but since 'disabled' is already extracted
+    // and 'href' is present in props (and thus in rest depending on how TS sees it, 
+    // actually rest is 'Omit<ButtonProps, ...>').
+    // Since 'href' is a differentiator, let's just cast.
     const anchorProps = rest as React.AnchorHTMLAttributes<HTMLAnchorElement>;
+
     return (
-      <a className={combinedClassName} {...anchorProps}>
+      <a
+        className={combinedClassName}
+        aria-disabled={disabled ? true : undefined}
+        onClick={handleClick}
+        {...anchorProps}
+      >
         {leading}
         {label}
         {trailing}
@@ -61,7 +91,13 @@ export const Button = (props: ButtonProps) => {
 
   const buttonProps = rest as React.ButtonHTMLAttributes<HTMLButtonElement>;
   return (
-    <button type="button" className={combinedClassName} {...buttonProps}>
+    <button
+      type="button"
+      className={combinedClassName}
+      aria-disabled={disabled ? true : undefined}
+      onClick={handleClick}
+      {...buttonProps}
+    >
       {leading}
       {label}
       {trailing}

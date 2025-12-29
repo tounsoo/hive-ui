@@ -63,8 +63,10 @@
 
     /* Ensure focus styles on the overlay are visible */
     .card:has(.overlay:focus-visible) {
-        outline-offset: 0.25rem;
-        outline: 0.125rem auto -webkit-focus-ring-color;
+        border-color: #3b82f6;
+        /* Border (Blue) + Inset (White) + Outset (Faint Blue) */
+        box-shadow: inset 0 0 0 0.0625rem #fff, 0 0 0 0.25rem color(from #3b82f6 srgb r g b / 0.2);
+        outline: none;
     }
 
     .title {

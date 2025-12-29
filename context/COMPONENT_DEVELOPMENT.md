@@ -15,6 +15,7 @@ Before implementing any component or feature, **ALWAYS check the versions of you
 - **Screen Reader Support**: Verify proper ARIA attributes, labels, and roles.
 - **Focus Management**: Handle focus trapping (modals) and restoration appropriately.
 - **Automated Testing**: Use `storybook-addon-a11y` or similar tools to catch basic violations.
+- **Focusable Disabled Elements**: Avoid `disabled` attribute if the element needs to remain focusable for screen reader users. Use `aria-disabled="true"` and `aria-disabled` styling hooks instead. Ensure to prevent interactions (clicks, keypresses) manually.
 
 ## TypeScript Guidelines
 **Robust and Type-Safe Code is Mandatory.**
@@ -29,10 +30,28 @@ Before implementing any component or feature, **ALWAYS check the versions of you
 Derived from existing robust components (`Button`, `Card`, `Dialog`):
 
 ### 1. Style Encapsulation
-- **CSS Layers**: Wrap all component styles in `@layer components` to ensure proper cascading order with Tailwind or other global styles.
-- **Naming**: Use camelCase class names (e.g., `.overlay`, `.interactive`) to match `styles.className` usage.
+-   **CSS Layers**: Wrap all component styles in `@layer components` to ensure proper cascading order with Tailwind or other global styles.
+-   **Naming**: Use camelCase class names (e.g., `.overlay`, `.interactive`) to match `styles.className` usage.
+-   **No Global Variables**: **Do not assume the existence of global CSS variables** (e.g., `var(--text-primary)`). Unless the project explicitly defines a global theme, use hardcoded values (hex, rem) or defined project tokens. This ensures components are self-contained and portable.
+-   **Units**: Prioritize `rem` over `px` for spacing, sizing, and borders to ensure accessibility and respect user settings (e.g., `0.0625rem` instead of `1px`).
+-   **Color Syntax**: Prefer Hex codes (e.g., `#3b82f6`) for solid colors. For alpha transparency or relative color manipulation, **prioritize standard CSS `color()` function** (e.g., `color(from #3b82f6 srgb r g b / 0.2)`) over legacy formats like `rgba()` or `hsla()`.
+-   **Focus Ring**: Use the "Double Inset" standard (Blue Border > White Gap > Faint Ring).
+    -   **Concept**:
+        1.  **Blue Edge**: 0.0625rem solid blue `#3b82f6` (via Border or Inset Shadow).
+        2.  **White Gap**: 0.0625rem solid white `#fff` (via Inset Shadow).
+        3.  **Faint Ring**: 0.125rem solid faint blue `color(from #3b82f6 srgb r g b / 0.2)` (via Outset Shadow).
+    -   **Implementation**:
+        -   **With Border** (Input, Card): `border-color: #3b82f6; box-shadow: inset 0 0 0 0.0625rem #fff, 0 0 0 0.125rem color(from #3b82f6 srgb r g b / 0.2); outline: none;`
+        -   **Without Border** (Button): `box-shadow: inset 0 0 0 0.0625rem #3b82f6, inset 0 0 0 0.125rem #fff, 0 0 0 0.25rem color(from #3b82f6 srgb r g b / 0.2); outline: none;`
+    -   **Selector**: Use `:focus-visible`.
+    -   **Selector**: Use `:focus-visible`.
 
-### 2. Polymorphic Components
+
+### 2. Form Components
+-   **Strict Identity**: All form fields MUST require `id` or `name` props to ensure they can be correctly associated with labels and forms.
+-   **Pure Components**: Prefer creating "pure" input components that style the native element directly, rather than wrapping them in heavy layout containers (like `div.input-group`). Composition should be handled by the consumer or separate layout components.
+
+### 3. Polymorphic Components
 - **Patterns**: Use **Discriminated Unions** for components that can render different root elements based on props (see `ButtonProps` in `Button/Button.tsx`).
 - **Safety**: Ensure invalid prop combinations are impossible by type definition (e.g., `href` implies `<a>` props, preventing `onClick` if not supported).
 

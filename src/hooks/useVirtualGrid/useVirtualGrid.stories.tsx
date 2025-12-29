@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { useRef, useState, useCallback, useEffect } from 'react';
+import { expect, userEvent, within, fn } from '@storybook/test';
 import { useVirtualGrid, type VirtualGridActionContext, type UseVirtualGridOptions, type UseVirtualGridResult } from './useVirtualGrid';
 
 // Generate dummy data
@@ -89,6 +90,7 @@ export const HookTest: Story = {
                 <div
                     ref={parentRef}
                     {...gridContainerProps}
+                    data-testid="virtual-grid"
                     style={{
                         ...gridContainerProps.style,
                         width: '100%',
@@ -113,7 +115,9 @@ export const HookTest: Story = {
                                         backgroundColor: focus.row === row.index ? '#e0f2fe' : 'white'
                                     }}
                                 >
-                                    {item.title}
+                                    <div role="gridcell" id={`cell-${row.index}-0`}>
+                                        {item.title}
+                                    </div>
                                 </div>
                             );
                         })}
@@ -121,6 +125,149 @@ export const HookTest: Story = {
                 </div>
             </div>
         );
+    },
+    play: async ({ canvasElement, step }) => {
+        const canvas = within(canvasElement);
+        const grid = canvas.getByTestId('virtual-grid');
+
+        await step('Initial render checks', async () => {
+            await expect(grid).toBeInTheDocument();
+            await expect(grid).toHaveAttribute('aria-activedescendant', 'cell-0-0');
+        });
+
+        await step('Keyboard navigation', async () => {
+            grid.focus();
+            await expect(grid).toHaveFocus();
+
+            // Arrow Down -> Row 1
+            await userEvent.keyboard('[ArrowDown]');
+            await expect(grid).toHaveAttribute('aria-activedescendant', 'cell-1-0');
+
+            // Arrow Down -> Row 2
+            await userEvent.keyboard('[ArrowDown]');
+            await expect(grid).toHaveAttribute('aria-activedescendant', 'cell-2-0');
+
+            // Arrow Up -> Row 1
+            await userEvent.keyboard('[ArrowUp]');
+            await expect(grid).toHaveAttribute('aria-activedescendant', 'cell-1-0');
+        });
+    }
+};
+
+export const GridNavigation: Story = {
+    args: {
+        items: myData,
+        columnCount: 2, // 2 Columns to test left/right
+        overscan: 2,
+        containerHeight: '300px',
+        onItemAction: fn(),
+    },
+    render: (args) => {
+        const parentRef = useRef<HTMLDivElement>(null);
+        const { virtualRows, gridContainerProps, gridContentProps, focus, getRowProps } = useVirtualGrid({
+            ...args,
+            parentRef,
+            estimateSize: () => 40,
+        });
+
+        return (
+            <div className="p-4">
+                <div
+                    ref={parentRef}
+                    {...gridContainerProps}
+                    data-testid="nav-grid"
+                    style={{ ...gridContainerProps.style, width: '100%', border: '1px solid #ccc' }}
+                >
+                    <div {...gridContentProps}>
+                        {virtualRows.map(row => {
+                            const item = args.items[row.index];
+                            if (!item) return null;
+                            const rowProps = getRowProps(row);
+                            return (
+                                <div
+                                    key={row.key}
+                                    {...rowProps}
+                                    style={{
+                                        ...rowProps.style,
+                                        display: 'grid',
+                                        gridTemplateColumns: '1fr 1fr',
+                                        backgroundColor: focus.row === row.index ? '#f0f9ff' : 'white'
+                                    }}
+                                >
+                                    {[0, 1].map(colIndex => (
+                                        <div
+                                            key={colIndex}
+                                            role="gridcell"
+                                            id={`cell-${row.index}-${colIndex}`}
+                                            style={{
+                                                padding: '8px',
+                                                border: '1px solid #eee',
+                                                // Visual focus indicator
+                                                outline: focus.row === row.index && focus.col === colIndex ? '2px solid blue' : 'none',
+                                                outlineOffset: '-2px'
+                                            }}
+                                        >
+                                            {colIndex === 0 ? item.title : `Col 2 - ${item.id}`}
+                                        </div>
+                                    ))}
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            </div>
+        );
+    },
+    play: async ({ canvasElement, step, args }) => {
+        const canvas = within(canvasElement);
+        const grid = canvas.getByTestId('nav-grid');
+        grid.focus();
+
+        await step('Horizontal Navigation', async () => {
+            // Start 0,0
+            await expect(grid).toHaveAttribute('aria-activedescendant', 'cell-0-0');
+
+            // Right -> 0,1
+            await userEvent.keyboard('[ArrowRight]');
+            await expect(grid).toHaveAttribute('aria-activedescendant', 'cell-0-1');
+
+            // Right (Boundary) -> 0,1 (Should not move)
+            await userEvent.keyboard('[ArrowRight]');
+            await expect(grid).toHaveAttribute('aria-activedescendant', 'cell-0-1');
+
+            // Left -> 0,0
+            await userEvent.keyboard('[ArrowLeft]');
+            await expect(grid).toHaveAttribute('aria-activedescendant', 'cell-0-0');
+
+            // Left (Boundary) -> 0,0 (Should not move)
+            await userEvent.keyboard('[ArrowLeft]');
+            await expect(grid).toHaveAttribute('aria-activedescendant', 'cell-0-0');
+        });
+
+        await step('Vertical Boundary', async () => {
+            // Up from 0,0 -> 0,0 (Boundary)
+            await userEvent.keyboard('[ArrowUp]');
+            await expect(grid).toHaveAttribute('aria-activedescendant', 'cell-0-0');
+        });
+
+        await step('Action Triggering', async () => {
+            // Enter
+            await userEvent.keyboard('[Enter]');
+            await expect(args.onItemAction).toHaveBeenCalledWith(expect.objectContaining({
+                row: 0,
+                col: 0
+            }));
+
+            // Move to 0,1
+            await userEvent.keyboard('[ArrowRight]');
+
+            // Space
+            await userEvent.keyboard(' '); // Space
+            await expect(args.onItemAction).toHaveBeenCalledWith(expect.objectContaining({
+                row: 0,
+                col: 1
+            }));
+        });
     }
 };
 
@@ -196,6 +343,8 @@ export const TwoColumnAction: Story = {
                                 >
                                     {/* Column 0: Text */}
                                     <div
+                                        role="gridcell"
+                                        id={`cell-${row.index}-0`}
                                         style={{
                                             flex: 1,
                                             padding: '0 8px',
@@ -210,6 +359,8 @@ export const TwoColumnAction: Story = {
 
                                     {/* Column 1: Button */}
                                     <div
+                                        role="gridcell"
+                                        id={`cell-${row.index}-1`}
                                         style={{
                                             width: '100px',
                                             display: 'flex',
@@ -264,32 +415,20 @@ const fetchMockData = (limit: number): Promise<GridItem[]> => {
 };
 
 export const InfiniteScroll: Story = {
-    render: () => {
+    loaders: [
+        async () => {
+            idCounter = 0;
+            const initialItems = await fetchMockData(20);
+            return { initialItems };
+        },
+    ],
+    render: (_args, { loaded: { initialItems } }) => {
         const parentRef = useRef<HTMLDivElement>(null);
 
-        // State
-        const [items, setItems] = useState<GridItem[]>([]);
+        // State - start with loaded data from loaders
+        const [items, setItems] = useState<GridItem[]>(initialItems);
         const [isLoading, setIsLoading] = useState(false);
         const [hasMore, setHasMore] = useState(true);
-
-        // Initial Load
-        useEffect(() => {
-            // Reset counter on mount for fresh story experience
-            idCounter = 0;
-            setItems([]);
-            setHasMore(true);
-
-            // Trigger first load
-            const loadInitial = async () => {
-                setIsLoading(true);
-                const initial = await fetchMockData(20);
-                setItems(initial);
-                setIsLoading(false);
-            };
-            loadInitial();
-
-            // eslint-disable-next-line react-hooks/exhaustive-deps
-        }, []);
 
         const loadMore = useCallback(async () => {
             if (isLoading || !hasMore) return;
@@ -350,8 +489,10 @@ export const InfiniteScroll: Story = {
                                         ${focus.row === row.index ? 'bg-blue-50 ring-1 ring-inset ring-blue-500' : 'hover:bg-gray-50'}
                                     `}
                                 >
-                                    <span className="font-mono text-gray-400 mr-3 w-8">{item.id}</span>
-                                    <span>{item.title}</span>
+                                    <div role="gridcell" id={`cell-${row.index}-0`} className="flex items-center w-full">
+                                        <span className="font-mono mr-3 w-8">{item.id}</span>
+                                        <span>{item.title}</span>
+                                    </div>
                                 </div>
                             );
                         })}
@@ -371,4 +512,111 @@ export const InfiniteScroll: Story = {
             </div>
         );
     },
+};
+
+export const MissingActionHandler: Story = {
+    args: {
+        items: myData,
+        columnCount: 1,
+        containerHeight: '300px',
+        onItemAction: undefined, // Explicitly undefined
+    },
+    render: (args) => {
+        const parentRef = useRef<HTMLDivElement>(null);
+        const { virtualRows, gridContainerProps, gridContentProps, focus, getRowProps } = useVirtualGrid({
+            ...args,
+            parentRef,
+        });
+
+        return (
+            <div className="p-4">
+                <div
+                    ref={parentRef}
+                    {...gridContainerProps}
+                    data-testid="missing-action-grid"
+                    style={{ ...gridContainerProps.style, width: '100%', border: '1px solid #ccc' }}
+                >
+                    <div {...gridContentProps}>
+                        {virtualRows.map(row => {
+                            const item = args.items[row.index];
+                            if (!item) return null;
+                            const rowProps = getRowProps(row);
+                            return (
+                                <div
+                                    key={row.key}
+                                    {...rowProps}
+                                    className="p-2 border-b"
+                                    style={{
+                                        ...rowProps.style,
+                                        background: focus.row === row.index ? '#e0e7ff' : 'transparent',
+                                    }}
+                                >
+                                    {/* Make the content a cell */}
+                                    <div role="gridcell" id={`cell-${row.index}-0`}>
+                                        {item.title}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            </div>
+        );
+    },
+    play: async ({ canvasElement, step }) => {
+        const canvas = within(canvasElement);
+        const grid = canvas.getByTestId('missing-action-grid');
+
+        await step('Interact without handler', async () => {
+            grid.focus();
+            // Should not throw and hit the branch
+            await userEvent.keyboard('[Enter]');
+            await userEvent.keyboard(' ');
+            await expect(grid).toHaveFocus();
+        });
+    }
+};
+
+export const EmptyList: Story = {
+    args: {
+        items: [],
+        columnCount: 1,
+        containerHeight: '300px',
+        onEndReached: fn(),
+    },
+    render: (args) => {
+        const parentRef = useRef<HTMLDivElement>(null);
+        const { virtualRows, gridContainerProps, gridContentProps } = useVirtualGrid({
+            ...args,
+            parentRef,
+        });
+
+        return (
+            <div className="p-4">
+                <div
+                    ref={parentRef}
+                    {...gridContainerProps}
+                    data-testid="empty-grid"
+                    style={{ ...gridContainerProps.style, width: '100%', border: '1px solid #ccc' }}
+                >
+                    <div {...gridContentProps}>
+                        {virtualRows.length === 0 && (
+                            <div role="row" aria-rowindex={1}>
+                                <div role="gridcell" className="p-4">No items</div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+        );
+    },
+    play: async ({ canvasElement, args }) => {
+        const canvas = within(canvasElement);
+        const grid = canvas.getByTestId('empty-grid');
+        await expect(grid).toBeInTheDocument();
+        await expect(canvas.getByText('No items')).toBeVisible();
+
+        // Confirm onEndReached is NOT called (hits empty check branch)
+        expect(args.onEndReached).not.toHaveBeenCalled();
+    }
 };
