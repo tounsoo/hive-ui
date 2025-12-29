@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { useRef, useState, useCallback, useEffect } from 'react';
+import { useRef, useState, useCallback } from 'react';
 import { expect, userEvent, within, fn } from '@storybook/test';
 import { useVirtualGrid, type VirtualGridActionContext, type UseVirtualGridOptions, type UseVirtualGridResult } from './useVirtualGrid';
 

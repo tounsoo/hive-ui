@@ -13,8 +13,7 @@
         transition:
             border-color 0.15s ease-in-out,
             box-shadow 0.15s ease-in-out;
-        outline: 2px solid transparent;
-        outline-offset: 2px;
+        box-sizing: border-box;
 
         &::placeholder {
             color: #9ca3af;
